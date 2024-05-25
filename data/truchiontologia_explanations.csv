@@ -1,0 +1,15 @@
+field_name,field,text
+idea_extendida,A4,Pincha sobre los azulejos que hayas explorado para jugar a adivinar coloreándolos si la primera traducción a la que daban acceso correspondía a la elaborada por ChatGPT o una persona
+idea,B4,"Truchiwoman trata de mostrar el coste que tiene verter la literatura árabe al castellano con ChatGPT para que se pueda apostar por la traducción humana, en tanto se pueda constatar que sale a cuenta una traducción más dedicada al lector de la lengua meta y más desapegada del significado literal del texto origen.  
+
+Tras pulsar en los azulejos de a derecha e izquierda, encontrarás una traducción de un extracto de la obra <i>En busca de Walid Masud</i>, de Yabra Ibrahim Yabra, que ha sido aleatoriamente elegida de entre dos opciones: o bien la producida por la última versión de ChatGPT, ChatGPT 4.0, o bien la realizada por una traductora humana, como se detalla <a href=""https://github.com/rtapiaoregui/truchiwoman"" target=""_blank"">aquí</a>. Se requiere su lectura y comprensión para poder continuar contestando a preguntas sobre su contenido. Al cabo, se mostrará la traducción alternativa, humana o automática, según corresponda, y el texto original en árabe, que permitirá acceder a los lugares en que se puede hallar respuesta a las preguntas planteadas.
+
+La cantidad total de extractos seleccionados y traducidos asciende a 53, de los cuales se escogen 24 al azar para ser mostrados a cada usuario cada día que visite la página, que es el tiempo durante el que se mantiene cada configuración de selección de extractos y orden en que se muestran ambas traducciones. 
+
+En ""¿Humano o robot?"" puedes jugar a adivinar cuáles son las traducciones realizadas por una persona y cuáles, automáticas.
+
+""En numérico"" enseña con gráficas el coste que tiene leer y asimilar una traducción, dependiendo del tipo de traductor, persona o máquina, que la haya elaborado, medido en ""tiempo de respuesta"", y nivel de ""relevancia"" y ""abstracción"" de las respuestas, términos cuya definición se ve al arrastrar el ratón por encima de las gráficas.
+
+Finalmente, en ""Tu opinión"", se te permite dar tu ídem libremente, sobre la filosofía de la traducción, este proyecto, un extracto específico o lo que sea que te venga en gana. "
+statistics,C4,Nuestra apoximación numérica a lo que distingue el impacto que causa leer lo escrito por una persona versus una máquina
+feedback,D4,Para que viertas tus inquietudes

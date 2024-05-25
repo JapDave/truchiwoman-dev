@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equic="X-UA-Compatible" content="ie=edge">
+    <title>truchiwoman</title>
+    <link rel='icon' href='/static/trucha.png' type='image/png'>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/main.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>	    
+
+	
+<body>
+    <div class="alert_container" >
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for cat, mess in messages %}
+                <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+                <span>{{ mess }}</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}                
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="explainer" id="idea">
+        <div class="text-idea" id="idearium" >
+            {{session.text | safe}}
+        </div> 
+
+        <form class="map_form" id="map_form" method="post" name="mis_colores">
+                
+            <div class="color_feast">
+                <div class="color_labels">
+                  <div class="colorlabel" >persona</div>
+                  <div class="colorlabel" >máquina</div>
+                  <div class="colorlabel" >ni zorra</div>
+                </div>
+                
+                <div class="colors">
+                  <div class="color" style="background-color: #9828bd85" data-hex="#9828bd85" label="human"></div>
+                  <div class="color" style="background-color: #ffcc3385" data-hex="#ffcc3385" label="chatgpt"></div>
+                  <div class="color" style="background-color: #3399ff00" data-hex="#3399ff00" label="none"></div>
+                </div>
+            </div>
+
+            <div class="product-svg" id="product-svg"">
+                <svg class="tiles" id="tiles" >
+                    {% if session["success"]["a1"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="0" y="0"/>
+                    {% elif session["success"]["a1"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="0" y="0"/>
+                    {% endif %}
+                    
+                    {% if session["success"]["a2"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="60" y="0"/>
+                    {% elif session["success"]["a2"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="60" y="0"/>
+                    {% endif %}
+
+                    {% if session["success"]["a3"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="120" y="0"/>
+                    {% elif session["success"]["a3"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="120" y="0"/>
+                    {% endif %}
+                    
+                    {% if session["success"]["a5"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="240" y="0"/>
+                    {% elif session["success"]["a5"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="240" y="0"/>
+                    {% endif %}
+                    
+                    {% if session["success"]["a6"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="300" y="0"/>
+                    {% elif session["success"]["a6"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="300" y="0"/>
+                    {% endif %}
+                                         
+                    {% if session["success"]["a7"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="360" y="0"/>
+                    {% elif session["success"]["a7"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="360" y="0"/>
+                    {% endif %}
+                                  
+                    {% if session["success"]["b1"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="0" y="60"/>
+                    {% elif session["success"]["b1"]  == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="0" y="60"/>
+                    {% endif %}
+                    
+                    {% if session["success"]["b2"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="60" y="60"/>
+                    {% elif session["success"]["b2"]  == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="60" y="60"/>
+                    {% endif %}
+
+                    {% if session["success"]["b3"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="120" y="60"/>
+                    {% elif session["success"]["b3"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="120" y="60"/>
+                    {% endif %}
+                    
+                    {% if session["success"]["b5"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="240" y="60"/>
+                    {% elif session["success"]["b5"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="240" y="60"/>
+                    {% endif %}
+                    
+                    {% if session["success"]["b6"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="300" y="60"/>
+                    {% elif session["success"]["b6"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="300" y="60"/>
+                    {% endif %}
+                                         
+                    {% if session["success"]["b7"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="360" y="60"/>
+                    {% elif session["success"]["b7"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="360" y="60"/>
+                    {% endif %}                                  
+                                  
+                    {% if session["success"]["c1"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="0" y="120"/>
+                    {% elif session["success"]["c1"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="0" y="120"/>
+                    {% endif %}
+                    
+                    {% if session["success"]["c2"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="60" y="120"/>
+                    {% elif session["success"]["c2"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="60" y="120"/>
+                    {% endif %}
+
+                    {% if session["success"]["c3"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="120" y="120"/>
+                    {% elif session["success"]["c3"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="120" y="120"/>
+                    {% endif %}
+                    
+                    {% if session["success"]["c5"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="240" y="120"/>
+                    {% elif session["success"]["c5"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="240" y="120"/>
+                    {% endif %}
+                    
+                    {% if session["success"]["c6"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="300" y="120"/>
+                    {% elif session["success"]["c6"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="300" y="120"/>
+                    {% endif %}
+                                         
+                    {% if session["success"]["c7"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="360" y="120"/>
+                    {% elif session["success"]["c7"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="360" y="120"/>
+                    {% endif %}                                            
+
+                    {% if session["success"]["d1"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="0" y="180"/>
+                    {% elif session["success"]["d1"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="0" y="180"/>
+                    {% endif %}
+                    
+                    {% if session["success"]["d2"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="60" y="180"/>
+                    {% elif session["success"]["d2"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="60" y="180"/>
+                    {% endif %}
+
+                    {% if session["success"]["d3"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="120" y="180"/>
+                    {% elif session["success"]["d3"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="120" y="180"/>
+                    {% endif %}
+                    
+                    {% if session["success"]["d5"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="240" y="180"/>
+                    {% elif session["success"]["d5"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="240" y="180"/>
+                    {% endif %}
+                    
+                    {% if session["success"]["d6"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="300" y="180"/>
+                    {% elif session["success"]["d6"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="300" y="180"/>
+                    {% endif %}
+                                         
+                    {% if session["success"]["d7"] == 1 %} 
+                         <image class="eval" xlink:href="static/tick.png" x="360" y="180"/>
+                    {% elif session["success"]["d7"] == 0 %}
+                         <image class="eval" xlink:href="static/cross.png" x="360" y="180"/>
+                    {% endif %}                                  
+
+                    <rect class="tile {% if session.hide.A1 == 0 %} ishidden {% endif %}" id="product-a1" x="0" y="0" />
+                    <rect class="tile {% if session.hide.A2 == 0 %} ishidden {% endif %}" id="product-a2" x="60" y="0" />
+                    <rect class="tile {% if session.hide.A3 == 0 %} ishidden {% endif %}" id="product-a3" x="120" y="0" />
+                    <rect class="tile ishidden" id="product-a4" x="180" y="0" />
+                    <rect class="tile {% if session.hide.A5 == 0 %} ishidden {% endif %}" id="product-a5" x="240" y="0" />
+                    <rect class="tile {% if session.hide.A6 == 0 %} ishidden {% endif %}" id="product-a6" x="300" y="0" />
+                    <rect class="tile {% if session.hide.A7 == 0 %} ishidden {% endif %}" id="product-a7" x="360" y="0" />
+                    
+                    <rect class="tile {% if session.hide.B1 == 0 %} ishidden {% endif %}" id="product-b1" x="0" y="60" />
+                    <rect class="tile {% if session.hide.B2 == 0 %} ishidden {% endif %}" id="product-b2" x="60" y="60" />
+                    <rect class="tile {% if session.hide.B3 == 0 %} ishidden {% endif %}" id="product-b3" x="120" y="60" />
+                    <rect class="tile ishidden" id="product-b4" x="180" y="60" />
+                    <rect class="tile {% if session.hide.B5 == 0 %} ishidden {% endif %}" id="product-b5" x="240" y="60" />
+                    <rect class="tile {% if session.hide.B6 == 0 %} ishidden {% endif %}" id="product-b6" x="300" y="60" />
+                    <rect class="tile {% if session.hide.B7 == 0 %} ishidden {% endif %}" id="product-b7" x="360" y="60" />
+                    
+                    <rect class="tile {% if session.hide.C1 == 0 %} ishidden {% endif %}" id="product-c1" x="0" y="120" />
+                    <rect class="tile {% if session.hide.C2 == 0 %} ishidden {% endif %}" id="product-c2" x="60" y="120" />
+                    <rect class="tile {% if session.hide.C3 == 0 %} ishidden {% endif %}" id="product-c3" x="120" y="120" />
+                    <rect class="tile ishidden" id="product-c4" x="180" y="120" />
+                    <rect class="tile {% if session.hide.C5 == 0 %} ishidden {% endif %}" id="product-c5" x="240" y="120" />
+                    <rect class="tile {% if session.hide.C6 == 0 %} ishidden {% endif %}" id="product-c6" x="300" y="120" />
+                    <rect class="tile {% if session.hide.C7 == 0 %} ishidden {% endif %}" id="product-c7" x="360" y="120" />
+                    
+                    <rect class="tile {% if session.hide.D1 == 0 %} ishidden {% endif %}" id="product-d1" x="0" y="180" />
+                    <rect class="tile {% if session.hide.D2 == 0 %} ishidden {% endif %}" id="product-d2" x="60" y="180" />
+                    <rect class="tile {% if session.hide.D3 == 0 %} ishidden {% endif %}" id="product-d3" x="120" y="180" />
+                    <rect class="tile ishidden" id="product-d4" x="180" y="180" />
+                    <rect class="tile {% if session.hide.D5 == 0 %} ishidden {% endif %}" id="product-d5" x="240" y="180" />
+                    <rect class="tile {% if session.hide.D6 == 0 %} ishidden {% endif %}" id="product-d6" x="300" y="180" />
+                    <rect class="tile {% if session.hide.D7 == 0 %} ishidden {% endif %}" id="product-d7" x="360" y="180" />
+                </svg>
+                <img class="back_image" id="back_image" src="static/fondo.png" >
+            </div>
+
+            <button class="submit_btn" id="submit_btn">
+                <img type="submit" class="submit_btn_img" src="static/success_rate.png" >
+            </button>
+                    
+            <input type="hidden" id="product-a1h" name="a1" value={% if session.votes.a1 %}"{{session.votes.a1}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-a2h" name="a2" value={% if session.votes.a2 %}"{{session.votes.a2}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-a3h" name="a3" value={% if session.votes.a3 %}"{{session.votes.a3}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-a5h" name="a5" value={% if session.votes.a5 %}"{{session.votes.a5}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-a6h" name="a6" value={% if session.votes.a6 %}"{{session.votes.a6}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-a7h" name="a7" value={% if session.votes.a7 %}"{{session.votes.a7}}" {% else %} "none" {% endif %}/>
+
+            <input type="hidden" id="product-b1h" name="b1" value={% if session.votes.b1 %}"{{session.votes.b1}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-b2h" name="b2" value={% if session.votes.b2 %}"{{session.votes.b2}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-b3h" name="b3" value={% if session.votes.b3 %}"{{session.votes.b3}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-b5h" name="b5" value={% if session.votes.b5 %}"{{session.votes.b5}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-b6h" name="b6" value={% if session.votes.b6 %}"{{session.votes.b6}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-b7h" name="b7" value={% if session.votes.b7 %}"{{session.votes.b7}}" {% else %} "none" {% endif %}/>
+            
+            <input type="hidden" id="product-c1h" name="c1" value={% if session.votes.c1 %}"{{session.votes.c1}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-c2h" name="c2" value={% if session.votes.c2 %}"{{session.votes.c2}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-c3h" name="c3" value={% if session.votes.c3 %}"{{session.votes.c3}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-c5h" name="c5" value={% if session.votes.c5 %}"{{session.votes.c5}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-c6h" name="c6" value={% if session.votes.c6 %}"{{session.votes.c6}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-c7h" name="c7" value={% if session.votes.c7 %}"{{session.votes.c7}}" {% else %} "none" {% endif %}/>            
+
+            <input type="hidden" id="product-d1h" name="d1" value={% if session.votes.d1 %}"{{session.votes.d1}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-d2h" name="d2" value={% if session.votes.d2 %}"{{session.votes.d2}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-d3h" name="d3" value={% if session.votes.d3 %}"{{session.votes.d3}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-d5h" name="d5" value={% if session.votes.d5 %}"{{session.votes.d5}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-d6h" name="d6" value={% if session.votes.d6 %}"{{session.votes.d6}}" {% else %} "none" {% endif %}/>
+            <input type="hidden" id="product-d7h" name="d7" value={% if session.votes.d7 %}"{{session.votes.d7}}" {% else %} "none" {% endif %}/>         
+        </form>
+        
+        <div class="wally_stats" id="wally_stats" >
+            {{session.success_rate | safe}}
+        </div> 
+
+    </div>
+    
+    <div class="salida_ex" id="salida_ex"> <img src="/static/icono_salida.png" style="width:75px; height:75px;"> </div>
+    
+    <div class="full_screen" id="full_screen" onclick="openFullscreen();" >
+         <img src="/static/full_screen.png" style="width:70px; height:70px;">
+    </div>
+    <div class="reduce_screen" id="reduce_screen" onclick="closeFullscreen();" >
+         <img src="/static/close_screen.png" style="width:70px; height:70px;">
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+        
+        document.getElementById("salida_ex").onclick = function () {
+            window.location.href = "index";
+        };
+        
+        
+        let overlay;
+        document.querySelectorAll('.tile:not(.ishidden)').forEach(function(path) {
+          path.onclick = chooseProduct;
+        })
+        
+        function chooseProduct(e) {
+          if (overlay) overlay.classList.remove("highlight")
+          overlay = e.target
+          overlay.classList.add("highlight")
+        }
+        
+        var el = document.getElementsByClassName("color");
+        for (var i = 0; i < el.length; i++) {
+          el[i].onclick = changeColor;
+        }
+        
+        function changeColor(e) {
+          let hex = e.target.getAttribute("data-hex");
+          if (overlay) overlay.style.fill = hex;
+          let label = e.target.getAttribute("label")
+          document.getElementById(overlay.getAttribute("id")+"h").setAttribute("value", label);
+        }
+        
+        // Using JavaScript to open the page in fullscreen mode
+        var elem = document.documentElement;
+        function openFullscreen() {
+          if (elem.requestFullscreen) {
+              elem.requestFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "visible";
+              document.getElementById("full_screen").style.visibility = "hidden";
+          } else if (elem.webkitRequestFullscreen) { 
+              elem.webkitRequestFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "visible";
+              document.getElementById("full_screen").style.visibility = "hidden";
+
+          } else if (elem.msRequestFullscreen) { /* IE11 */
+              elem.msRequestFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "visible";
+              document.getElementById("full_screen").style.visibility = "hidden";
+          }
+        }
+        
+        function closeFullscreen() {
+          if (document.exitFullscreen) {
+              document.exitFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "hidden";
+              document.getElementById("full_screen").style.visibility = "visible";
+          } else if (document.webkitExitFullscreen) { /* Safari */
+              document.webkitExitFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "hidden";
+              document.getElementById("full_screen").style.visibility = "visible";
+          } else if (document.msExitFullscreen) { /* IE11 */
+              document.msExitFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "hidden";
+              document.getElementById("full_screen").style.visibility = "visible";
+          }
+        }
+
+    </script>
+    
+    <script type="text/javascript" defer>
+        {% for key, value in session["votes"].items() %}
+            {% if value == "human" %} 
+                  document.getElementById("product-{{key}}").style.fill = "#9828bd85";
+            {% else %}
+                 document.getElementById("product-{{key}}").style.fill = "#ffcc3385";
+            {% endif %}
+        {% endfor %}  
+        
+        function redirectMobileHandler() {
+          const width = Math.max(document.clientWidth || 0, window.innerWidth || 0);
+          if (width < 1000) {
+              window.location.href = "small_screen";
+          }
+        }
+        
+        window.onload = redirectMobileHandler();
+        window.onresize = () => redirectMobileHandler();
+              
+    </script>
+    
+</body>
+
+</html>

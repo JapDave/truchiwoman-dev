@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equic="X-UA-Compatible" content="ie=edge">
+    <link rel='icon' href='/static/trucha.png' type='image/png'>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/main.css') }}">
+</head>	    
+
+	
+<body>
+    
+    <div class="grid-text-container">
+        <div class="text-container" id="tc-trans1">
+            <div class="text-excerpt" id="trad" style="text-align: justify;">
+                {{session.trans1 | safe}}
+            </div> 
+            <div class="followup-opts">
+                <img class="preguntas" id="preguntas" src="/static/icono_preguntas.png">
+            </div>    
+        </div>
+                
+        <div class="text-container" id="tc-trans2">
+            <div class="text-excerpt" id="trad" style="text-align: justify;">
+                {{session.trans2 | safe}}
+            </div> 
+            <div class="followup-opts">
+                <img class="lupa" id="lupa" src="/static/icono_lupa.png" >
+            </div>
+        </div>
+                
+        <div class="text-container" id="tc-quest">
+            <form class="preguntas_form" method="post" name="mis_form_preguntas" onsubmit="showCoin()">
+                <div class="text-excerpt" id="questions">
+                    {{session.pregunta1 | safe}}
+                </div> 
+                <div class="form__group field">
+                    {% if session.respuesta1 %}
+                        <input type="text" name="respuesta1" class="form__field" placeholder="{{ session.respuesta1 }}" autocomplete="off" readonly />
+                    {% else %}
+                        <input type="text" name="respuesta1" class="form__field" placeholder="Campo obligatorio para poder continuar la travesía" autocomplete="off" required />
+                    {% endif %}
+                </div>
+                
+                <div class="text-excerpt" id="questions">
+                    {{session.pregunta2 | safe}}
+                </div> 
+                <div class="form__group field">
+                    {% if session.respuesta2 %}
+                        <input type="text" name="respuesta2" class="form__field" placeholder="{{ session.respuesta2 }}" autocomplete="off" readonly />
+                    {% else %}
+                        <input type="text" name="respuesta2" class="form__field" placeholder="Campo obligatorio para poder continuar la travesía" autocomplete="off" required />
+                    {% endif %}
+                    <input type="submit" id="submit_btn" hidden />
+                </div>
+            </form>
+
+
+            <div class="followup-opts" id="moneda-ext">
+                <div class="followup-opts-int" id="moneda-int">
+                    <div class="caraA" id="moneda1"> <img class="moneda" src="/static/icono_moneda_caraA.png" style="width:75px; height:75px;"> </div>
+                    <div class="caraB" id="moneda2"> <img class="moneda" src="/static/icono_moneda_caraB.png" style="width:75px; height:75px;"> </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-container" id="tc-org">
+            <div class="text-excerpt-ar" id="original" style="text-align: right;">
+                {{session.original | safe}}
+            </div>        
+        </div>
+    </div>
+
+    <div class="salida" id="salida"> <img src="/static/icono_salida.png" style="width:75px; height:75px;"> </div>
+
+    <div class="full_screen" id="full_screen" onclick="openFullscreen();" >
+         <img src="/static/full_screen.png" style="width:70px; height:70px;">
+    </div>
+    <div class="reduce_screen" id="reduce_screen" onclick="closeFullscreen();" >
+         <img src="/static/close_screen.png" style="width:70px; height:70px;">
+    </div>
+    
+    <script type="text/javascript">
+    
+       function showCoin() {
+              document.getElementById("moneda-ext").style.visibility = "visible";
+       };
+
+       document.getElementById("preguntas").onclick = function () {
+           document.getElementById("tc-quest").style.visibility = "visible";
+       };
+
+       document.getElementById("moneda2").onclick = function () {
+           document.getElementById("tc-trans2").style.visibility = "visible";
+       };
+       
+       document.getElementById("lupa").onclick = function () {
+           document.getElementById("tc-org").style.visibility = "visible";
+       };            
+
+       document.getElementById("salida").onclick = function () {
+           window.location.href = "index";
+       };
+       
+       {% if session.respuesta1 %}
+            document.getElementById("tc-quest").style.visibility = "visible";
+            document.getElementById("moneda-ext").style.visibility = "visible";
+       {% endif %}
+       
+        function redirectMobileHandler() {
+          const width = Math.max(document.clientWidth || 0, window.innerWidth || 0);
+          if (width < 1000) {
+              window.location.href = "small_screen";
+          }
+        }
+        
+        window.onload = redirectMobileHandler();
+        window.onresize = () => redirectMobileHandler();
+        
+        // Using JavaScript to open the page in fullscreen mode
+        var elem = document.documentElement;
+        
+        function openFullscreen() {
+          if (elem.requestFullscreen) {
+              elem.requestFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "visible";
+              document.getElementById("full_screen").style.visibility = "hidden";
+          } else if (elem.webkitRequestFullscreen) { 
+              elem.webkitRequestFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "visible";
+              document.getElementById("full_screen").style.visibility = "hidden";
+
+          } else if (elem.msRequestFullscreen) { /* IE11 */
+              elem.msRequestFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "visible";
+              document.getElementById("full_screen").style.visibility = "hidden";
+          }
+        }
+        
+        function closeFullscreen() {
+          if (document.exitFullscreen) {
+              document.exitFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "hidden";
+              document.getElementById("full_screen").style.visibility = "visible";
+          } else if (document.webkitExitFullscreen) { /* Safari */
+              document.webkitExitFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "hidden";
+              document.getElementById("full_screen").style.visibility = "visible";
+          } else if (document.msExitFullscreen) { /* IE11 */
+              document.msExitFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "hidden";
+              document.getElementById("full_screen").style.visibility = "visible";
+          }
+        }
+           
+    </script>
+
+</body>
+
+</html>

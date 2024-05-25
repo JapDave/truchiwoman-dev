@@ -1,0 +1,6 @@
+runtime: python37
+instance_class: F4_1G
+env_variables:
+  CLOUD_STORAGE_BUCKET: collocations-finder-data
+  SERVER_TYPE: GCP
+  VERBOSE: False

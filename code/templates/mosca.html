@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html class="acceso" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equic="X-UA-Compatible" content="ie=edge">
+    <title>truchiwoman</title>
+    <link rel='icon' href='/static/trucha.png' type='image/png' >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/main.css') }}">
+</head>	    
+
+	
+<body>
+
+    <video id="myVideo" muted autoplay></video>
+    
+    <script type="text/javascript">
+        var videoSource = new Array();
+        videoSource[0] = '/static/landing.mp4';
+        videoSource[1] = '/static/portal.mp4';
+        let vid = document.getElementById("myVideo");
+
+        
+        function videoPlay(videoNum) {
+            vid.setAttribute("src", videoSource[videoNum]);
+            vid.load();
+            vid.play();
+        }
+        
+        function reDirect() {
+            window.location.href = "index";
+        }
+        
+        vid.addEventListener('ended', myHandler, { once: true });
+        videoPlay(0); 
+        
+        function myHandler() {
+            vid.addEventListener('ended', myHandler2, { once: true });
+            videoPlay(1); 
+            document.getElementById('myVideo').addEventListener("click", reDirect);
+
+        }
+        
+        function myHandler2() {
+            document.getElementById('myVideo').removeEventListener("click", reDirect);
+        }
+        
+        function redirectMobileHandler() {
+          const width = Math.max(document.clientWidth || 0, window.innerWidth || 0);
+          if (width < 1000) {
+            window.location.href = "small_screen";
+          }
+        }
+        
+        window.onload = redirectMobileHandler();
+        window.onresize = () => redirectMobileHandler();
+        
+    </script>
+
+</body>
+
+</html>

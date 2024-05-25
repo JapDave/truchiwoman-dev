@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equic="X-UA-Compatible" content="ie=edge">
+    <title>truchiwoman</title>
+    <link rel='icon' href='/static/trucha.png' type='image/png'>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/main.css') }}">
+</head>	    
+
+	
+<body>
+    
+
+    <div class="explainer" id="idea">
+        <div class="text-idea" id="idearium" >
+            {{session.title | safe}}
+        </div>     
+        <div class="text-idea-content" id="idearium-content" >
+            <div>{{session.text1 | safe}}</div>
+            <img class="guide_image" id="guide_image" src="static/modal_back_img.png" >
+            <div class="guide_message"  id="guide_message" onmouseenter="conceptExplainer(this)" onmouseleave="conceptHider(this)">{{session.text2 | safe}}</div>
+        </div>    
+    </div>
+
+    <div class="salida_ex" id="salida_ex"> <img src="/static/icono_salida.png" style="width:75px; height:75px;"> </div>
+    <div class="full_screen" id="full_screen" onclick="openFullscreen();" >
+         <img src="/static/full_screen.png" style="width:70px; height:70px;">
+    </div>
+    <div class="reduce_screen" id="reduce_screen" onclick="closeFullscreen();" >
+         <img src="/static/close_screen.png" style="width:70px; height:70px;">
+    </div>
+    
+
+    <script type="text/javascript">
+        function conceptExplainer(x) {
+            x.style.opacity = 1;
+            document.getElementById("guide_image").style.opacity = 0;
+
+        };
+        
+        function conceptHider(x) {
+            x.style.opacity = 0;
+            document.getElementById("guide_image").style.opacity = 1;
+        };
+                   
+        document.getElementById("salida_ex").onclick = function () {
+            window.location.href = "index";
+        };
+        
+        function redirectMobileHandler() {
+          const width = Math.max(document.clientWidth || 0, window.innerWidth || 0);
+          if (width < 1000) {
+              window.location.href = "small_screen";
+          }
+        }
+        
+        window.onload = redirectMobileHandler();
+        window.onresize = () => redirectMobileHandler();
+        
+        // Using JavaScript to open the page in fullscreen mode
+        var elem = document.documentElement;
+        function openFullscreen() {
+          if (elem.requestFullscreen) {
+              elem.requestFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "visible";
+              document.getElementById("full_screen").style.visibility = "hidden";
+          } else if (elem.webkitRequestFullscreen) { 
+              elem.webkitRequestFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "visible";
+              document.getElementById("full_screen").style.visibility = "hidden";
+
+          } else if (elem.msRequestFullscreen) { /* IE11 */
+              elem.msRequestFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "visible";
+              document.getElementById("full_screen").style.visibility = "hidden";
+          }
+        }
+        
+        function closeFullscreen() {
+          if (document.exitFullscreen) {
+              document.exitFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "hidden";
+              document.getElementById("full_screen").style.visibility = "visible";
+          } else if (document.webkitExitFullscreen) { /* Safari */
+              document.webkitExitFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "hidden";
+              document.getElementById("full_screen").style.visibility = "visible";
+          } else if (document.msExitFullscreen) { /* IE11 */
+              document.msExitFullscreen();
+              document.getElementById("reduce_screen").style.visibility = "hidden";
+              document.getElementById("full_screen").style.visibility = "visible";
+          }
+        }
+    </script>
+
+</body>
+
+</html>
