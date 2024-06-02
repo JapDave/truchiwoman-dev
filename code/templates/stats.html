@@ -27,7 +27,7 @@
     </div>
     <div class="explainer" id="idea">
         <div class="text-idea" id="idearium" >
-            {{session.text | safe}}
+            {{content.text | safe}}
         </div>  
         <div class="boxplot_graph" id="boxplot_graph" >
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -35,18 +35,18 @@
                     <span class="adelantum" id="adelantum" ><p>Te me has adelantado.</p></span>
                 {% else %}
                     <div class="hidden_concepts" id="hidden_concepts" >
-                        <div class="hidden_concept_time" id="hidden_concept_time" onmouseenter="conceptExplainer(this)" onmouseleave="conceptHider(this)">{{session.time_notion | safe}}</div>  
-                        <div class="hidden_concept_relev" id="hidden_concept_relev" onmouseenter="conceptExplainer(this)" onmouseleave="conceptHider(this)">{{session.relev_notion | safe}}</div>  
-                        <div class="hidden_concept_abstr" id="hidden_concept_abstr" onmouseenter="conceptExplainer(this)" onmouseleave="conceptHider(this)" >{{session.abstr_notion | safe}}</div>  
+                        <div class="hidden_concept_time" id="hidden_concept_time" onmouseenter="conceptExplainer(this)" onmouseleave="conceptHider(this)">{{content.time_notion | safe}}</div>  
+                        <div class="hidden_concept_relev" id="hidden_concept_relev" onmouseenter="conceptExplainer(this)" onmouseleave="conceptHider(this)">{{content.relev_notion | safe}}</div>  
+                        <div class="hidden_concept_abstr" id="hidden_concept_abstr" onmouseenter="conceptExplainer(this)" onmouseleave="conceptHider(this)" >{{content.abstr_notion | safe}}</div>  
                     </div>
                     <div class="stats_graph" id="stats_graph" >
-                        <img src="{{ url_for('static', filename='plots/boxplots.png') }}"> 
+                        <img src="{{ content.img_path }}"> 
                         <div class="general_stats_info" id="general_stats_info">
-                        La cantidad de usuarios que han enviado respuestas válidas asciende a {{session.amount_users | safe}}, 
-                        y la cantidad total de azulejos resueltos de forma aceptable asciende a {{session.amount_solved_tiles | safe}}
+                        La cantidad de usuarios que han enviado respuestas válidas asciende a {{content.amount_users | safe}}, 
+                        y la cantidad total de azulejos resueltos de forma aceptable asciende a {{content.amount_solved_tiles | safe}}
                         (quedando excluidos los valores del primer azulejo explorado por cada usuario, que se considera de prueba),
-                        {{session.amount_solved_tiles_human | safe}} en los que la primera traducción mostrada ha sido realizada por una persona y
-                        {{session.amount_solved_tiles_chatgpt | safe}} en los que la primera traducción es automática.
+                        {{content.amount_solved_tiles_human | safe}} en los que la primera traducción mostrada ha sido realizada por una persona y
+                        {{content.amount_solved_tiles_chatgpt | safe}} en los que la primera traducción es automática.
                         Los puntos de color representan los valores extraídos de lo que nos ha proporcionado exclusivamente usted.
                         </div>  
                     </div>  

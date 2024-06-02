@@ -9,28 +9,26 @@ Flask app
 
 """
 
-import regex, os
-from random import sample, shuffle, choice
+import regex, os, io
+from random import sample
 import pandas as pd
 import numpy as np 
-import pickle
-from matplotlib import pyplot as plt
-from matplotlib.lines import Line2D
-from matplotlib.patches import Patch
+
 from unidecode import unidecode
 
-import seaborn as sns
-from flask import Flask, render_template, request, session, jsonify, redirect, url_for, flash
+from flask import Flask, render_template, request, session, redirect, url_for, flash
 
 import uuid
 import time
 from datetime import datetime
-import sys
 
-from insight_retriever import meaning_extractor
 from synonyms_extractor import Synonyms_and_lemmas_saver
+from insight_retriever import meaning_extractor
+
+from google.cloud import storage
 
 
+from DatabaseConnector import _write_file, _read_file, _list_dir, _path_exists
 
 app = Flask(__name__)
 app.secret_key = b'_asfqwr54q3rfvcEQ@$'
@@ -47,7 +45,7 @@ explain_path = os.path.join(data_path, 'truchiontologia_explanations.csv')
 resources_path = os.path.join(data_path, "linguistic_resources")
 
 nov_trad_path = os.path.join(resources_path, "novela_traducida.txt")
-class_path = os.path.join(resources_path, "synonyms_and_lemmas_class.joblib")
+class_path = os.path.join(resources_path, "synonyms_and_lemmas_class.pickle")
 
 meaningful_df_path = os.path.join(data_path, "meaningful_df.csv")
 success_rates_path = os.path.join(data_path, "success_rates_df.csv")
@@ -109,8 +107,8 @@ syn_lem_inst = syn_lem_inst.main(iterations_for_unfound_syns=iterations_for_unfo
                                  verbose=verbose,
                                  save_class=save_class) 
     
-onto_df = pd.read_csv(onto_path)
-explain_df = pd.read_csv(explain_path)
+onto_df = _read_file(onto_path)
+explain_df = _read_file(explain_path)
 
 my_guide = {v: k for k, v in [e.values() for e in explain_df[["field_name", "field"]].to_dict("records")]}
 
@@ -124,7 +122,7 @@ for letter in letters:
 
 
 def legibility_checker(x):
-    if ((regex.search(r'([aeiou]\w|\w[aeiou]){2,}', x) and len(x)>3) or 
+    if ((regex.search(r'([aeiouáéíóú]\w|\w[aeiouáéíóú]){2,}', x) and len(x)>3) or 
         (len(x)<=3 and regex.search(r'(si|no)', unidecode(x)))):
         return True
     else:
@@ -132,6 +130,8 @@ def legibility_checker(x):
 
 
 def get_plot(user, boxplot_df, color_codes_wanted):
+    from matplotlib import pyplot as plt
+    import seaborn as sns
     
     sns.set_theme()
     fig, axes = plt.subplots(1, 3, sharex=True, figsize=(10, 5))
@@ -172,13 +172,33 @@ def get_plot(user, boxplot_df, color_codes_wanted):
         axes[j].set(xlabel=None)
         axes[j].set(ylabel=None)
     
-    plt.savefig(os.path.join('static', 'plots', 'boxplots.png'), transparent=True) 
+    if os.environ.get('SERVER_TYPE', '') == 'GCP': 
+        client = storage.Client(project='truchiwoman')
+        bucket = client.bucket('data_truchiwoman')
+        blob = bucket.blob('plots/'+user+'.png')
+        # temporarily save image to buffer
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', transparent=True)
+        
+        # upload buffer contents to gcs
+        blob.upload_from_string(
+            buf.getvalue(),
+            content_type='image/png')
+        
+        buf.close()
+        
+        img_path = blob.public_url
+    else:
+        plt.savefig(os.path.join('static', 'plots', user+'.png'), transparent=True) 
+        img_path = url_for('static', filename='plots/'+user+'.png')
 
-    return None
+    return img_path
     
 
 
 def flahsing(prev_explored_df, n_tiles=3):
+    if '_flashes' in session:
+        session['_flashes'].clear()    
 
     if not prev_explored_df.empty:
         cond_resp0 = prev_explored_df[["response1", "response2"]].map(legibility_checker).apply(sum, axis=1)
@@ -189,21 +209,18 @@ def flahsing(prev_explored_df, n_tiles=3):
             m = f"Tienes que contestar satisfactoriamente a las preguntas de al menos {n_tiles} de los azulejos de los laterales para poder acceder a este contenido, de los cuales te falta{m_rest} por explorar."
             flash(m, "danger")
     else:
-        flash("Tienes que contestar satisfactoriamente a las preguntas de al menos {n_tiles} de los azulejos de los laterales para poder acceder a este contenido.", "danger")
+        flash(f"Tienes que contestar satisfactoriamente a las preguntas de al menos {n_tiles} de los azulejos de los laterales para poder acceder a este contenido.", "danger")
 
 
 
-def onto_df_reader(session_user, configs_folder, max_or_min="max"):
-        
-    init_time = [float(regex.sub(r"\.csv", "", e.split("__")[-1])) for e in os.listdir(configs_folder) 
-                 if len(os.listdir(configs_folder)) > 0 and regex.match(regex.compile(session_user), e.split("__")[0])]
+def onto_df_reader(session_user, configs_folder):
+    
+    all_configs = _list_dir(configs_folder)
+    init_time = ['.'.join(e.split("__")[-1].split(".")[:-1]) for e in all_configs if len(all_configs) > 0 and session_user==e.split("__")[0]]
     
     if init_time: 
-        if max_or_min == "max":
-            outpath = f"{session_user}__{max(init_time)}.csv"
-        else:
-            outpath = f"{session_user}__{min(init_time)}.csv"
-        onto_df = pd.read_csv(os.path.join(configs_folder, outpath), index_col=0, keep_default_na=False)
+        outpath = f"{session_user}__{max(init_time)}.csv"
+        onto_df = _read_file(os.path.join(configs_folder, outpath))
         return onto_df, outpath
     else:
         return pd.DataFrame(), None
@@ -214,13 +231,16 @@ def onto_df_reader(session_user, configs_folder, max_or_min="max"):
 @app.route("/mosca", methods=['GET'])
 def landing():
     
+    if not "user" in session:
+        session['user'] = str(uuid.uuid4())
+        session['start_time'] = time.time()
+    
     if request.method == 'GET':   
         if not "user" in session or not "passed_fly" in session:
             session["passed_fly"] = 1
             return render_template('mosca.html')
         else:
             return redirect(url_for('index'))
-
 
 @app.route("/leyenda", methods=['GET'])
 def recounting():
@@ -233,16 +253,8 @@ def recounting():
             return redirect(url_for('index'))
 
 
-@app.route("/small_screen", methods=['GET'])
-def small_screen():
-    
-    if request.method == 'GET':   
-        return render_template('small_screen.html')
-
-
 @app.route("/", methods=['GET', 'POST'])
 def passing():
-    
     if request.method == 'GET': 
         if not "user" in session:
             return render_template('portal.html')
@@ -260,38 +272,35 @@ def passing():
     
 @app.route("/index", methods=['GET'])
 def index():
-
+    
     if request.method == 'GET':   
-        if ("passed_fly" in session and "passed_guide" in session) and not "user" in session:
-            session['user'] = str(uuid.uuid4())
-            session['start_time'] = time.time()
+        if not "user" in session:
+            return redirect(url_for('landing'))
             
         elif not "passed_fly" in session:
             return redirect(url_for('passing'))
         
         elif not "passed_guide" in session:
             return redirect(url_for('recounting'))
-            
-            
+        
         outpath = f"{session['user']}__{time.time()}.csv"
-        init_time = [float(regex.sub(r"\.csv", "", e.split("__")[-1])) for e in os.listdir(configs_folder) 
-                     if regex.match(regex.compile(session['user']), e.split("__")[0])]
+        all_configs = _list_dir(configs_folder)
+        init_time = ['.'.join(e.split("__")[-1].split(".")[:-1]) for e in all_configs if len(all_configs) > 0 and session["user"]==e.split("__")[0]]
         
         human_bot_shuffle = sample(["chatgpt", "human"]*15, 24)
         
         shuffled_onto = pd.concat([onto_df.sample(len(opt_list)).reset_index(), 
                                    pd.DataFrame({"field": opt_list, "agent": human_bot_shuffle, 
                                                  "response1":[""]*24, "response2":[""]*24})], 
-                                  axis=1)
-        
+                                  axis=1)    
         if init_time:
-            elapsed_hours = (datetime.fromtimestamp(time.time())-datetime.fromtimestamp(max(init_time))).total_seconds()/3600
+            elapsed_hours = (datetime.fromtimestamp(time.time())-datetime.fromtimestamp(float(max(init_time)))).total_seconds()/3600
             if elapsed_hours >= 24:
-                shuffled_onto.to_csv(os.path.join(configs_folder, outpath))
+                _write_file(shuffled_onto, os.path.join(configs_folder, outpath))
                   
         else:
-            shuffled_onto.to_csv(os.path.join(configs_folder, outpath))
-                
+            _write_file(shuffled_onto, os.path.join(configs_folder, outpath))
+        
         return render_template('index.html')
 
     
@@ -318,34 +327,33 @@ def translator():
         agent = onto[onto.field==field]["agent"].tolist()[0]   
         other_agent = list(set(["chatgpt", "human"]).difference([agent]))[0]
 
-        session["trans1"] = regex.sub(r"\n", "<br>", translations[agent].strip())
-        session["trans2"] = regex.sub(r"\n", "<br>", translations[other_agent].strip())
-        session["original"] = regex.sub(r"\n", "<br>", original1.strip())
-        session["pregunta1"] = onto[onto.field==field]["question1"].tolist()[0]
-        session["pregunta2"] = onto[onto.field==field]["question2"].tolist()[0]
-        
-        session["respuesta1"] = onto[onto.field==field]["response1"].tolist()[0]
-        session["respuesta2"] = onto[onto.field==field]["response2"].tolist()[0]
+        content = {}
 
-        session["unique_id"] = onto[onto.field==field]["unique_id"].tolist()[0]
+        content["trans1"] = regex.sub(r"\n+", "<br><br>", translations[agent].strip())
+        content["trans2"] = regex.sub(r"\n+", "<br><br>", translations[other_agent].strip())
+        content["original"] = regex.sub(r"\n+", "<br><br>", original1.strip())
+        content["pregunta1"] = onto[onto.field==field]["question1"].tolist()[0]
+        content["pregunta2"] = onto[onto.field==field]["question2"].tolist()[0]
+        
+        content["respuesta1"] = onto[onto.field==field]["response1"].tolist()[0]
+        content["respuesta2"] = onto[onto.field==field]["response2"].tolist()[0]
+
+        # content["unique_id"] = onto[onto.field==field]["unique_id"].tolist()[0]
         session["len_orig"] = len(regex.sub(r'\<mark\d+\>', "", original0))
-        session["agent"] = agent
+        # session["agent"] = agent
         session["start_translation"] = time.time()       
              
-        return render_template('translations.html')
+        return render_template('translations.html', content = content)
     
 
     if request.method == 'POST':
-        _, outpath0 = onto_df_reader(session["user"], configs_folder, max_or_min="min")
-
         onto.loc[onto.field==field, "response1"] = request.form.get('respuesta1')
         onto.loc[onto.field==field, "response2"] = request.form.get('respuesta2')
         onto.loc[onto.field==field, "time_elapsed"] = time.time()-session["start_translation"]
-        onto.loc[onto.field==field, "time_elapsed_since_beginning"] = time.time()-float(regex.search(r"(?<=__)\d+\.\d+(?=\.csv)", outpath0).group())
         onto.loc[onto.field==field, "len_orig"] = session["len_orig"]
         onto.loc[onto.field==field, "user"] = session["user"]
 
-        onto.to_csv(os.path.join(configs_folder, outpath))
+        _write_file(onto, os.path.join(configs_folder, outpath))
         
         return "", 204
         
@@ -357,44 +365,43 @@ def explainer():
         field = request.args.get("location")
         explanation = explain_df[explain_df.field==field].text.tolist()[0].strip()
         explan_parts = regex.split(r"(?<=\.)\s*\n+\s*(?=[A-Z]\w)", explanation)
-        session["title"] = "El futuro de la traducción"
-        session["text1"] = "<span style='margin-left:2em'>" + explan_parts[0] + "</span>"
-        session["text2"] = "<span style='margin-left:2em'>" + "</span><br><span style='margin-left:2em'>".join(explan_parts[1:]) + "</span>"
+        content = {}
+        content["title"] = "El futuro de la traducción"
+        content["text1"] = "<span style='margin-left:25px'>" + explan_parts[0] + "</span>"
+        content["text2"] = "<span style='margin-left:25px'>" + "</span><br><span style='margin-left:25px'>".join(explan_parts[1:]) + "</span>"
 
-        return render_template('explanations.html')
+        return render_template('explanations.html', content = content)
 
 
 @app.route("/wheres_wally", methods=['GET', 'POST'])
 def wally_searcher():
-    
     onto, outpath = onto_df_reader(session["user"], configs_folder)
 
+    content = {}
     session["votes"] = {}
     session["success"] = {}
-    session["hide"] = {}
+    content["hide"] = {}
+    field = request.args.get("location")
+    explanation = explain_df[explain_df.field==field].text.tolist()[0].strip()
+    explanation1 = regex.sub(r"(persona|human[oa])", 
+                                     f"<span style='background-color:{color_codes_wanted.get('human')}75'>{regex.search(r'(persona|human[oa])', explanation, regex.I).group()}</span>", 
+                                     explanation)
+            
+    explanation2 = regex.sub(regex.compile('(máquina|automátic[oa]|chatgpt)', regex.I), 
+                                     f"<span style='background-color:{color_codes_wanted.get('chatgpt')}75'>{regex.search(r'(máquina|automátic[oa]|chatgpt)', explanation1, regex.I).group()}</span>", 
+                                     explanation1)
+    content["text"] = regex.sub(r"\n", "<br>", explanation2)
+    
     for l in "ABCD":
         for i in list(range(1, 4)) + list(range(5, 8)):
-            session["hide"][l+str(i)] = int(bool(len(onto[onto.field==l+str(i)]["response1"].values[0])>0))
+            content["hide"][l+str(i)] = int(bool(len(onto[onto.field==l+str(i)]["response1"].values[0])>0))
     
     if request.method == 'GET':  
-        session["success_rate"] = ""
+        content["success_rate"] = ""
         flahsing(onto, 3)
-
-        field = request.args.get("location")
-        explanation = explain_df[explain_df.field==field].text.tolist()[0].strip()
-        explanation1 = regex.sub(r"(persona|human[oa])", 
-                                 f"<span style='background-color:{color_codes_wanted.get('human')}75'>{regex.search(r'(persona|human[oa])', explanation, regex.I).group()}</span>", 
-                                 explanation)
-        
-        explanation2 = regex.sub(regex.compile('(máquina|automátic[oa]|chatgpt)', regex.I), 
-                                 f"<span style='background-color:{color_codes_wanted.get('chatgpt')}75'>{regex.search(r'(máquina|automátic[oa]|chatgpt)', explanation1, regex.I).group()}</span>", 
-                                 explanation1)
-        
-        session["text"] = regex.sub(r"\n", "<br>", explanation2)
-
-        return render_template('wheres_wally.html')
-
-
+        return render_template('wheres_wally.html', content = content)
+    
+    
     if request.method == 'POST':
         guesses = {}
         guesses["total_guessed"] = 0
@@ -418,88 +425,117 @@ def wally_searcher():
             success_df1 = success_df0.assign(field=success_df0.field_lower.str.upper())
             success_df = onto.merge(success_df1, on=["user", "field"], how="inner")
             success_df1 = pd.concat([success_df[success_df.success==1].agent.value_counts()/success_df.agent.value_counts()*100, pd.Series({"success_rate": success_df.success.mean()*100})], axis=0)
-            if os.path.exists(success_rates_path):
-                success_df0 = pd.read_csv(success_rates_path, index_col=0)
-                success_df2 = pd.concat([success_df0, 
-                                         pd.DataFrame(success_df1).T], axis=0).fillna(0)
+            
+            success_df1 = {}
+            success_df1["success_chatgpt"] = len(success_df[(success_df.success==1) & (success_df.agent=="chatgpt")])
+            success_df1["fail_chatgpt"] = len(success_df[(success_df.success==0) & (success_df.agent=="chatgpt")])
+            success_df1["success_human"] = len(success_df[(success_df.success==1) & (success_df.agent=="human")])
+            success_df1["fail_human"] = len(success_df[(success_df.success==0) & (success_df.agent=="human")])
+            success_df1 = pd.DataFrame(success_df1, index=[0])
+
+            if  _path_exists(success_rates_path):
+                success_df0 = _read_file(success_rates_path)
+                success_df2 = pd.concat([success_df0, success_df1], axis=0)
             else:
-                success_df2 = pd.DataFrame(success_df1).T.fillna(0)
+                success_df2 = success_df1
+
                 
-            success_df2.to_csv(success_rates_path)
-            human_mean = round(success_df2.human.mean())
-            chat_mmean = round(success_df2.chatgpt.mean())
-            your_success = round(success_df1.success_rate) if not pd.isna(success_df1.success_rate.round()) else 0
+            _write_file(success_df2, success_rates_path)
+            
+            
+            global_mean = round((success_df2.success_human.sum()+success_df2.success_chatgpt.sum())/success_df2.sum().sum()*100)
+            try:
+                human_mean = round(success_df2.success_human.sum()/(success_df2.success_human.sum()+success_df2.fail_human.sum())*100)
+            except:
+                human_mean = "N/A"
+                
+            try:
+                chat_mmean = round(success_df2.success_chatgpt.sum()/(success_df2.success_chatgpt.sum()+success_df2.fail_chatgpt.sum())*100)
+            except:
+                chat_mmean = "N/A"
+                
+            your_success = round((success_df1.success_human.sum()+success_df1.success_chatgpt.sum())/success_df1.sum().sum()*100)
             your_success_per_trans = success_df.groupby("agent")["success"].sum()
             
-            session["success_rate"] = regex.sub(r"\n+", "<br><br>", f"""
-            De {success_df.shape[0]} azulejos que habías completado y la naturaleza de cuyas traducciones has jugado a adivinar, has acertado el {your_success} % de las veces, <span style='color:white; background-color:{color_codes_wanted.get('chatgpt')}97'>&ensp;{your_success_per_trans.get("chatgpt", 0)}&ensp;</span> cuando se trataba de una traducción automática y <span style='color:white; background-color:{color_codes_wanted.get('human')}90'>&ensp;{your_success_per_trans.get("human", 0)}&ensp;</span> cuando no.
-            De media, la gente acierta el {round(success_df2.success_rate.mean())} % de las veces, el <span style='color:white; background-color:{color_codes_wanted.get('human')}97'>&ensp;{human_mean}%&ensp;</span> si la primera traducción mostrada ha sido realizada por una persona y el <span style='color:white; background-color:{color_codes_wanted.get('chatgpt')}90'>&ensp;{chat_mmean}%&ensp;</span> si es maquinal.
+            content["success_rate"] = regex.sub(r"\n+", "<br><br>", f"""
+            De {success_df.shape[0]} azulejos que has completado y la naturaleza de cuyas traducciones has jugado a adivinar, has acertado el {your_success} % de las veces, <span style='color:white; letter-spacing: .2rem; background-color:{color_codes_wanted.get('chatgpt')}97'>{your_success_per_trans.get("chatgpt", 0)}</span> cuando se trataba de una traducción automática y <span style='color:white; letter-spacing: .2rem; background-color:{color_codes_wanted.get('human')}90'>{your_success_per_trans.get("human", 0)}</span> cuando no.
+            De media, la gente acierta el {global_mean} % de las veces, el <span style='color:white; letter-spacing: .2rem; background-color:{color_codes_wanted.get('human')}97'>{human_mean}</span> si la primera traducción mostrada ha sido realizada por una persona y el <span style='color:white; letter-spacing: .2rem; background-color:{color_codes_wanted.get('chatgpt')}90'>{chat_mmean}</span> si es maquinal.
             """.strip())
         else:
-            session["success_rate"] = "Tienes que explorar un mínimo de 3 azulejos para poder jugar."
-            session["success"] = {}
+            content["success_rate"] = "Tienes que explorar un mínimo de 3 azulejos para poder jugar."
+            content["success"] = {}
         
         
-        return render_template('wheres_wally.html')
-
+        return render_template('wheres_wally.html', content = content)
 
 
 @app.route("/stats", methods=['GET'])
 def stats_grabber(): 
     if request.method == 'GET':  
-    
+        content = {}
         field = request.args.get("location")
         explanation = explain_df[explain_df.field==field].text.tolist()[0].strip()
-        session["text"] = regex.sub(r"\n+", "<br><br>", explanation)
+        content["text"] = regex.sub(r"\n+", "<br><br>", explanation)
         
         onto, outpath = onto_df_reader(session["user"], configs_folder)
         flahsing(onto, n_tiles=4)
         
-        final_df = meaning_extractor(paths.get("configs_folder"), syn_lem_inst)
+        if '_flashes' not in session:      
+            final_df = meaning_extractor(paths.get("configs_folder"), syn_lem_inst)
+        else:
+            final_df = pd.DataFrame()
         if not final_df.empty and final_df.shape[0] >= 4:
-            cond_time = final_df.time_elapsed<7
+            cond_time = pd.to_numeric(final_df.time_elapsed)<7
             cond_resp = final_df[["response1", "response2"]].map(legibility_checker).apply(sum, axis=1)
-            cond_first_obs = final_df.time_elapsed_since_beginning==final_df.time_elapsed_since_beginning.min()
-            users_df = final_df.assign(weighted_times = final_df.time_elapsed/final_df.len_orig,
+            cond_first_obs = pd.to_numeric(final_df.time_elapsed)==pd.to_numeric(final_df.time_elapsed).min()
+            users_df = final_df.assign(weighted_times = pd.to_numeric(final_df.time_elapsed)/pd.to_numeric(final_df.len_orig),
                                        too_quick = cond_time,
                                        too_sloppy_resp = np.where(cond_resp == 2, False, True),
                                        first_obs = np.where(cond_first_obs, True, False))   
         
             boxplot_df = users_df[(users_df.too_quick==False) & (users_df.too_sloppy_resp==False) & (users_df.shape[0]>=3) & (users_df.first_obs==False)]
-            if not boxplot_df.empty and boxplot_df.shape[0] >= 4:
-                _ = get_plot(session['user'], boxplot_df, color_codes_wanted)
-                
-                session["time_notion"] = concepts_dict.get("time")
-                session["relev_notion"] = concepts_dict.get("relev")
-                session["abstr_notion"] = concepts_dict.get("abstr")
-                session["amount_users"] = boxplot_df.user.nunique()
-                session["amount_solved_tiles"] = boxplot_df["agent"].shape[0]
+            flahsing(boxplot_df, n_tiles=4)
+
+            if not boxplot_df.empty and boxplot_df.shape[0] >= 4 and '_flashes' not in session:
+                try:
+                    content["img_path"] = get_plot(session['user'], boxplot_df, color_codes_wanted)
+                except:
+                    _write_file(str(session["user"])+"\n"+str(final_df.shape[0])+"\n"+str(boxplot_df.shape[0]), "/data/log_img_err.txt")
+                    _write_file(final_df, "/data/final_df.csv")
+                    _write_file(boxplot_df, "/data/boxplot_df.csv")
+                content["time_notion"] = concepts_dict.get("time")
+                content["relev_notion"] = concepts_dict.get("relev")
+                content["abstr_notion"] = concepts_dict.get("abstr")
+                content["amount_users"] = boxplot_df.user.nunique()
+                content["amount_solved_tiles"] = boxplot_df["agent"].shape[0]
                 amount_solved_tiles_human = boxplot_df.agent.value_counts().get('human', 0)
                 amount_solved_tiles_chatgpt = boxplot_df.agent.value_counts().get('chatgpt', 0)
-                session["amount_solved_tiles_human"] = f"<span style='color:white; background-color:{color_codes_wanted.get('human')}'>&ensp;{int(amount_solved_tiles_human)}&ensp;</span>"
-                session["amount_solved_tiles_chatgpt"] = f"<span style='color:white; background-color:{color_codes_wanted.get('chatgpt')}'>&ensp;{int(amount_solved_tiles_chatgpt)}&ensp;</span>"
-                
-        return render_template('stats.html') 
+                content["amount_solved_tiles_human"] = f"<span style='color:white; background-color:{color_codes_wanted.get('human')}'>&ensp;{int(amount_solved_tiles_human)}&ensp;</span>"
+                content["amount_solved_tiles_chatgpt"] = f"<span style='color:white; background-color:{color_codes_wanted.get('chatgpt')}'>&ensp;{int(amount_solved_tiles_chatgpt)}&ensp;</span>"   
+            else:
+                _write_file(str(session["user"])+"\n"+str(final_df.shape[0])+"\n"+str(boxplot_df.shape[0]), "/data/log_img_err.txt")
+                _write_file(final_df, "/data/final_df_arg.csv")
+                _write_file(boxplot_df, "/data/boxplot_df_arg.csv")
+        return render_template('stats.html', content = content) 
             
     
     
 @app.route("/feedback", methods=['GET', 'POST'])
 def feedb_requester():
+    content = {}
     field = request.args.get("location")
     explanation = explain_df[explain_df.field==field].text.tolist()[0].strip()
-    session["text"] = regex.sub(r"\n+", "<br><br>", explanation)
+    content["text"] = regex.sub(r"\n+", "<br><br>", explanation)
     
     if request.method == 'GET':  
         onto, outpath = onto_df_reader(session["user"], configs_folder)
         flahsing(onto, 3)
-        return render_template('feedback.html')    
+        return render_template('feedback.html', content = content)    
     
     if request.method == 'POST':
         if 'user_feedback' in request.form:
-            feedback_block = request.form.get('user_feedback')
-            
-            with open(os.path.join(feedback_folder, session["user"]+".txt"), 'a') as fh:
-                fh.write(feedback_block+"\n\n")
+            feedback_block = request.form.get('user_feedback')  
+            _write_file(feedback_block+"\n\n", os.path.join(feedback_folder, session["user"]+"__"+str(time.time())+".txt"))
                 
         return "", 204
 

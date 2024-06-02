@@ -27,7 +27,7 @@
 
     <div class="explainer" id="idea">
         <div class="text-idea" id="idearium" >
-            {{session.text | safe}}
+            {{content.text | safe}}
         </div> 
 
         <form class="map_form" id="map_form" method="post" name="mis_colores">
@@ -192,37 +192,37 @@
                          <image class="eval" xlink:href="static/cross.png" x="360" y="180"/>
                     {% endif %}                                  
 
-                    <rect class="tile {% if session.hide.A1 == 0 %} ishidden {% endif %}" id="product-a1" x="0" y="0" />
-                    <rect class="tile {% if session.hide.A2 == 0 %} ishidden {% endif %}" id="product-a2" x="60" y="0" />
-                    <rect class="tile {% if session.hide.A3 == 0 %} ishidden {% endif %}" id="product-a3" x="120" y="0" />
+                    <rect class="tile {% if content.hide.A1 == 0 %} ishidden {% endif %}" id="product-a1" x="0" y="0" />
+                    <rect class="tile {% if content.hide.A2 == 0 %} ishidden {% endif %}" id="product-a2" x="60" y="0" />
+                    <rect class="tile {% if content.hide.A3 == 0 %} ishidden {% endif %}" id="product-a3" x="120" y="0" />
                     <rect class="tile ishidden" id="product-a4" x="180" y="0" />
-                    <rect class="tile {% if session.hide.A5 == 0 %} ishidden {% endif %}" id="product-a5" x="240" y="0" />
-                    <rect class="tile {% if session.hide.A6 == 0 %} ishidden {% endif %}" id="product-a6" x="300" y="0" />
-                    <rect class="tile {% if session.hide.A7 == 0 %} ishidden {% endif %}" id="product-a7" x="360" y="0" />
+                    <rect class="tile {% if content.hide.A5 == 0 %} ishidden {% endif %}" id="product-a5" x="240" y="0" />
+                    <rect class="tile {% if content.hide.A6 == 0 %} ishidden {% endif %}" id="product-a6" x="300" y="0" />
+                    <rect class="tile {% if content.hide.A7 == 0 %} ishidden {% endif %}" id="product-a7" x="360" y="0" />
                     
-                    <rect class="tile {% if session.hide.B1 == 0 %} ishidden {% endif %}" id="product-b1" x="0" y="60" />
-                    <rect class="tile {% if session.hide.B2 == 0 %} ishidden {% endif %}" id="product-b2" x="60" y="60" />
-                    <rect class="tile {% if session.hide.B3 == 0 %} ishidden {% endif %}" id="product-b3" x="120" y="60" />
+                    <rect class="tile {% if content.hide.B1 == 0 %} ishidden {% endif %}" id="product-b1" x="0" y="60" />
+                    <rect class="tile {% if content.hide.B2 == 0 %} ishidden {% endif %}" id="product-b2" x="60" y="60" />
+                    <rect class="tile {% if content.hide.B3 == 0 %} ishidden {% endif %}" id="product-b3" x="120" y="60" />
                     <rect class="tile ishidden" id="product-b4" x="180" y="60" />
-                    <rect class="tile {% if session.hide.B5 == 0 %} ishidden {% endif %}" id="product-b5" x="240" y="60" />
-                    <rect class="tile {% if session.hide.B6 == 0 %} ishidden {% endif %}" id="product-b6" x="300" y="60" />
-                    <rect class="tile {% if session.hide.B7 == 0 %} ishidden {% endif %}" id="product-b7" x="360" y="60" />
+                    <rect class="tile {% if content.hide.B5 == 0 %} ishidden {% endif %}" id="product-b5" x="240" y="60" />
+                    <rect class="tile {% if content.hide.B6 == 0 %} ishidden {% endif %}" id="product-b6" x="300" y="60" />
+                    <rect class="tile {% if content.hide.B7 == 0 %} ishidden {% endif %}" id="product-b7" x="360" y="60" />
                     
-                    <rect class="tile {% if session.hide.C1 == 0 %} ishidden {% endif %}" id="product-c1" x="0" y="120" />
-                    <rect class="tile {% if session.hide.C2 == 0 %} ishidden {% endif %}" id="product-c2" x="60" y="120" />
-                    <rect class="tile {% if session.hide.C3 == 0 %} ishidden {% endif %}" id="product-c3" x="120" y="120" />
+                    <rect class="tile {% if content.hide.C1 == 0 %} ishidden {% endif %}" id="product-c1" x="0" y="120" />
+                    <rect class="tile {% if content.hide.C2 == 0 %} ishidden {% endif %}" id="product-c2" x="60" y="120" />
+                    <rect class="tile {% if content.hide.C3 == 0 %} ishidden {% endif %}" id="product-c3" x="120" y="120" />
                     <rect class="tile ishidden" id="product-c4" x="180" y="120" />
-                    <rect class="tile {% if session.hide.C5 == 0 %} ishidden {% endif %}" id="product-c5" x="240" y="120" />
-                    <rect class="tile {% if session.hide.C6 == 0 %} ishidden {% endif %}" id="product-c6" x="300" y="120" />
-                    <rect class="tile {% if session.hide.C7 == 0 %} ishidden {% endif %}" id="product-c7" x="360" y="120" />
+                    <rect class="tile {% if content.hide.C5 == 0 %} ishidden {% endif %}" id="product-c5" x="240" y="120" />
+                    <rect class="tile {% if content.hide.C6 == 0 %} ishidden {% endif %}" id="product-c6" x="300" y="120" />
+                    <rect class="tile {% if content.hide.C7 == 0 %} ishidden {% endif %}" id="product-c7" x="360" y="120" />
                     
-                    <rect class="tile {% if session.hide.D1 == 0 %} ishidden {% endif %}" id="product-d1" x="0" y="180" />
-                    <rect class="tile {% if session.hide.D2 == 0 %} ishidden {% endif %}" id="product-d2" x="60" y="180" />
-                    <rect class="tile {% if session.hide.D3 == 0 %} ishidden {% endif %}" id="product-d3" x="120" y="180" />
+                    <rect class="tile {% if content.hide.D1 == 0 %} ishidden {% endif %}" id="product-d1" x="0" y="180" />
+                    <rect class="tile {% if content.hide.D2 == 0 %} ishidden {% endif %}" id="product-d2" x="60" y="180" />
+                    <rect class="tile {% if content.hide.D3 == 0 %} ishidden {% endif %}" id="product-d3" x="120" y="180" />
                     <rect class="tile ishidden" id="product-d4" x="180" y="180" />
-                    <rect class="tile {% if session.hide.D5 == 0 %} ishidden {% endif %}" id="product-d5" x="240" y="180" />
-                    <rect class="tile {% if session.hide.D6 == 0 %} ishidden {% endif %}" id="product-d6" x="300" y="180" />
-                    <rect class="tile {% if session.hide.D7 == 0 %} ishidden {% endif %}" id="product-d7" x="360" y="180" />
+                    <rect class="tile {% if content.hide.D5 == 0 %} ishidden {% endif %}" id="product-d5" x="240" y="180" />
+                    <rect class="tile {% if content.hide.D6 == 0 %} ishidden {% endif %}" id="product-d6" x="300" y="180" />
+                    <rect class="tile {% if content.hide.D7 == 0 %} ishidden {% endif %}" id="product-d7" x="360" y="180" />
                 </svg>
                 <img class="back_image" id="back_image" src="static/fondo.png" >
             </div>
@@ -261,7 +261,7 @@
         </form>
         
         <div class="wally_stats" id="wally_stats" >
-            {{session.success_rate | safe}}
+            {{content.success_rate | safe}}
         </div> 
 
     </div>

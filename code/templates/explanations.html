@@ -15,12 +15,12 @@
 
     <div class="explainer" id="idea">
         <div class="text-idea" id="idearium" >
-            {{session.title | safe}}
+            {{content.title | safe}}
         </div>     
         <div class="text-idea-content" id="idearium-content" >
-            <div>{{session.text1 | safe}}</div>
+            <div>{{content.text1 | safe}}</div>
             <img class="guide_image" id="guide_image" src="static/modal_back_img.png" >
-            <div class="guide_message"  id="guide_message" onmouseenter="conceptExplainer(this)" onmouseleave="conceptHider(this)">{{session.text2 | safe}}</div>
+            <div class="guide_message"  id="guide_message" onmouseenter="conceptExplainer(this)" onmouseleave="conceptHider(this)">{{content.text2 | safe}}</div>
         </div>    
     </div>
 

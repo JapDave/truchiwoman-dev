@@ -11,7 +11,6 @@ import regex
 from bs4 import BeautifulSoup as bs
 
 import os
-import joblib
 import time
 from unidecode import unidecode
 
@@ -19,7 +18,7 @@ import random
 from tqdm import tqdm
 from collections import Counter
 
-
+from DatabaseConnector import _read_file, _write_file, _path_exists
     
 class Synonyms_and_lemmas_saver():
     
@@ -486,9 +485,9 @@ class Synonyms_and_lemmas_saver():
         
     def main(self, iterations_for_unfound_syns=3, increase_syn_dict=5000, save_increase_step=50, save_class=True, verbose=True):
         
-        if os.path.exists(self.class_path):
-            with open(self.class_path, "rb") as fh:
-                self = joblib.load(fh) 
+        if _path_exists(self.class_path):
+            self = _read_file(self.class_path)
+
         else:
             self.clean_text = None
             
@@ -537,9 +536,7 @@ class Synonyms_and_lemmas_saver():
                 print(f"\nIrregular verbs without traceable synonyms:\n\n{', '.join(self.not_in_wref)}\n")
                 
             if save_class:
-                with open(self.class_path, "wb") as fh:
-                    joblib.dump(self, fh) 
-                
+                _write_file(self, self.class_path)                
                                   
         # Enriching the synonyms' dictionary
         if self.iterations_made < iterations_for_unfound_syns:
@@ -563,8 +560,7 @@ class Synonyms_and_lemmas_saver():
                 
                         if len(self.synonyms_dict.keys()) > init_syn_len and len(self.synonyms_dict.keys()) % save_increase_step == 0:
                             init_syn_len = len(self.synonyms_dict.keys())
-                            with open(self.class_path, "wb") as fh:
-                                 joblib.dump(self, fh)  
+                            _write_file(self, self.class_path) 
                                  
                             self.nombres_propios = []
                             if len(self.notfound_voc) > 750:
@@ -580,8 +576,7 @@ class Synonyms_and_lemmas_saver():
                                       """)
                                       
                 if save_class:
-                    with open(self.class_path, "wb") as fh:
-                        joblib.dump(self, fh)
+                    _write_file(self, self.class_path)  
                     
                     self.iterations_made += 1
                     self.notfound_voc = []
@@ -597,8 +592,7 @@ class Synonyms_and_lemmas_saver():
             self.unresolved_words = set(self.notfound_voc).difference(self.nombres_propios)
 
             if save_class:
-                with open(self.class_path, "wb") as fh:
-                     joblib.dump(self, fh)  
+                _write_file(self, self.class_path)   
 
                 if self.verbose:
                     print("\nThe saved class has all its attributes.\n")
@@ -609,31 +603,4 @@ class Synonyms_and_lemmas_saver():
         return self
 
 
-
-if __name__ == "__main__":
-   
-    
-    # Variables
-    increase_syn_dict = 6000
-    verbose = True
-    iterations_for_unfound_syns = 4
-    
-    # Paths
-    data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
-    resources_path = os.path.join(data_path, "linguistic_resources")
-    
-    nov_trad_path = os.path.join(resources_path, "novela_traducida.txt")
-    class_path = os.path.join(resources_path, "synonyms_and_lemmas_class.joblib")
-    
-    if not os.path.exists(resources_path):
-        os.makedirs(resources_path)
-    
-    syn_lem_inst = Synonyms_and_lemmas_saver(class_path, nov_trad_path)
-    syn_lem_inst = syn_lem_inst.main(iterations_for_unfound_syns=iterations_for_unfound_syns, 
-                                     increase_syn_dict=increase_syn_dict)    
-    
-    print(len(syn_lem_inst.synonyms_dict))
-    print(len(syn_lem_inst.final_lemmas))
-    
-    
     

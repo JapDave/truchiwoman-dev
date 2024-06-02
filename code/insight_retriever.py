@@ -15,9 +15,7 @@ import os
 from collections import Counter
 
 from synonyms_extractor import Synonyms_and_lemmas_saver
-
-
-
+from DatabaseConnector import _read_file, _write_file, _list_dir
 
 def real_time_processor(row, relev_trad, alter_trad, syn_lem_inst, inversed_lemmas, stop_words):
         
@@ -167,29 +165,30 @@ def meaning_extractor(resp_folder_path, syn_lem_inst):
     stop_words = set(confused_stops+[k for k, v in Counter(all_nvl_lemmas).items() if v/len(all_nvl_wrds) > .0021 and len(k)>1])-set(confused_by_stops)
     
     enriched_dfs = []
-    for file in os.listdir(resp_folder_path):
+    files = _list_dir(resp_folder_path)
+    for file in files:
         if regex.search(r"\.csv$", file):
-            onto_df = pd.read_csv(os.path.join(resp_folder_path, file), index_col=0)
+            onto_df = _read_file(os.path.join(resp_folder_path, file))
             if not (onto_df.response1.isna().all() or onto_df.response2.isna().all()):
                 response_df = onto_df[(onto_df.response1 + onto_df.response1).str.len() > 2]
-                
-                row_qualities, row_evals = [], []
-                for row_n in range(response_df.shape[0]):
-                    whole_row = response_df.iloc[row_n]
-                    row = whole_row["response1"] + " " + whole_row["response2"]
+                if response_df.shape[0]>0:
+                    row_qualities, row_evals = [], []
+                    for row_n in range(response_df.shape[0]):
+                        whole_row = response_df.iloc[row_n]
+                        row = whole_row["response1"] + " " + whole_row["response2"]
+                        
+                        alt_trad = list(set(["human", "chatgpt"]).difference(set([whole_row.agent])))[0]
+                        relev_trad = whole_row[whole_row.agent]
+                        alter_trad = whole_row[alt_trad]
                     
-                    alt_trad = list(set(["human", "chatgpt"]).difference(set([whole_row.agent])))[0]
-                    relev_trad = whole_row[whole_row.agent]
-                    alter_trad = whole_row[alt_trad]
-                
-                    row_quality = real_time_processor(row, relev_trad, alter_trad, syn_lem_inst, inversed_lemmas, stop_words)
-                    row_qualities.append(row_quality)
-                    row_evals.append(response_grader(row_quality) | {"unique_id": int(whole_row["unique_id"])})
-            
-                eval_df = pd.DataFrame(row_evals).set_index("unique_id")
-                useful_cols = [c for c in response_df.columns if not regex.search(r"\s|unique_id", c)]
-                whole_df = pd.concat([response_df.set_index("unique_id")[useful_cols], eval_df], axis=1)
-                enriched_dfs.append(whole_df)
+                        row_quality = real_time_processor(row, relev_trad, alter_trad, syn_lem_inst, inversed_lemmas, stop_words)
+                        row_qualities.append(row_quality)
+                        row_evals.append(response_grader(row_quality) | {"unique_id": int(whole_row["unique_id"])})
+                        
+                    eval_df = pd.DataFrame(row_evals).set_index("unique_id")
+                    useful_cols = [c for c in response_df.columns if not regex.search(r"\s|unique_id", c)]
+                    whole_df = pd.concat([response_df.set_index("unique_id")[useful_cols], eval_df], axis=1)
+                    enriched_dfs.append(whole_df)
     
     if enriched_dfs:
         final_df = pd.concat(enriched_dfs, axis=0)

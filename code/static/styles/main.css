@@ -23,13 +23,12 @@ html {
   font-family: 'Arvo', sans-serif;
 }
 
-a:link {
-  color: #0d7ea3;
+a {
+  color: #3b6bad;
 }
 
-
 a:hover {
-  color: #a8139e;
+  color: #dd28d0;
 }
 
 a:active {
@@ -121,36 +120,39 @@ video {
 .wally_stats {
     line-height: 1.3em;
     text-align: justify;
-    padding: 1.2em;
-    font-size: calc(1px + (21 - 1) * ((100vw - 200px) / (1600 - 200)));
-    }
+    margin-left: 1vw;
+    margin-right: 1vw;
+    position: relative;
+   	font-size: 2.2vmin;
+}
 
 .adelantum {
     font-size: 2em;
     line-height: 1.5em;
     text-align: center;
     position: absolute;
-    top: 30%;
+    top: 22vh;
     left: 25%;
     right: 25%;
-    bottom: 40%;
+    bottom: auto;
 }
 
 
 .text-idea-content span {
-    font-size: calc(13px + (20 - 13) * ((100vw - 1250px) / (1600 - 1250)));
-    line-height: 120%; 
+    font-size: 1.97vmin;
+    line-height: 1.5em;
     text-align: justify;
 }
 
 .text-idea-content img {
-    position: absolute;
+    position: fixed;
     max-width: 40vw;
-    max-height: auto;
+    max-height: 40vh;
     float: center;
     margin: 1em;
-    left: 10vw;
-    right: 10vw;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     opacity: 1;
 }
 
@@ -165,9 +167,9 @@ video {
 .map_form {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    margin: calc(15px + (25 - 15) * ((100vw - 1000px) / (1600 - 1000))) calc(2px + (50 - 2) * ((100vw - 1000px) / (1600 - 1000))) 3vw calc(2px + (50 - 2) * ((100vw - 1000px) / (1600 - 1000)));
+    margin: calc(15px + (25 - 15) * ((100vw - 1000px) / (1600 - 1000))) calc(2px + (50 - 2) * ((100vw - 1000px) / (1600 - 1000))) 2vh calc(2px + (50 - 2) * ((100vw - 1000px) / (1600 - 1000)));
     grid-gap: calc(5px + (43 - 5) * ((100vw - 1500px) / (1600 - 1500)));
-    }
+}
 
 .color_feast {
     grid-row: 1;
@@ -322,6 +324,7 @@ body:has(.trigger[id^="2"]:hover, .trigger[id^="2"]:focus) .highlit_span[id^="2"
     cursor: pointer;
 }
 
+
 .explainer{
     position: absolute;
     background-color: rgba(228, 236, 245, 0.75);
@@ -336,36 +339,42 @@ body:has(.trigger[id^="2"]:hover, .trigger[id^="2"]:focus) .highlit_span[id^="2"
     line-height: 1.3em;
     font-family: 'Cuprum', sans-serif;
     z-index: -33;
+    display: grid;
+    grid-template-rows: max-content max-content;
+    justify-content: center;
+    align-items: center;
 }
+
 
 .loading {
     position: fixed;
-    height: 10vw;
+    height: 10vh;
     width: 10vw;
-    top: 55%;
-    left: calc(50px + (743 - 50) * ((100vw - 300px) / (1600 - 300)));
+    top: 60vh;
+    left: 50%;
+    transform: translate(-50%, -50%);
     visibility: hidden;
 }
 
 .boxplot_graph {
     align-self: center;
     position: relative;
-    height: 90%
 }
 
 .stats_graph {
     position: relative;
     display: grid;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: max-content max-content;
     justify-content: center;
-    height: inherit;
   }
 
 .stats_graph > img { 
   	z-index: -1;
   	position: relative;
-  	max-height: 100%;
-  	max-width: 100%;
+  	height: 47vh;
+  	width: 50vw;
+  	margin-left: auto;
+  	margin-right: auto;
 }
 
 
@@ -376,7 +385,7 @@ body:has(.trigger[id^="2"]:hover, .trigger[id^="2"]:focus) .highlit_span[id^="2"
    	max-width: 100%;
     font-weight: 200;
     text-align: justify;
-    font-size: calc(14px + (18 - 14) * ((100vw - 1300px) / (1600 - 1300)));
+    font-size: calc(13px + (18 - 13) * ((100vw - 200px) / (1600 - 200)));
     z-index: 1;
 }
 
@@ -663,7 +672,13 @@ textarea {
 
 #planeform {
     position: relative;
-    align-self: center;
-    left: 3%;
-    top: 5%;
+    self-align: center;
+    width: fit-content;
+    height: fit-content;
+    margin: 1.5em;
+}
+
+#feed_message {
+    width: calc(25px + (850 - 25) * ((100vw - 50px) / (1600 - 50)));
+    height: 42vh;
 }

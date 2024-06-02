@@ -14,7 +14,7 @@
     <div class="grid-text-container">
         <div class="text-container" id="tc-trans1">
             <div class="text-excerpt" id="trad" style="text-align: justify;">
-                {{session.trans1 | safe}}
+                {{content.trans1 | safe}}
             </div> 
             <div class="followup-opts">
                 <img class="preguntas" id="preguntas" src="/static/icono_preguntas.png">
@@ -23,7 +23,7 @@
                 
         <div class="text-container" id="tc-trans2">
             <div class="text-excerpt" id="trad" style="text-align: justify;">
-                {{session.trans2 | safe}}
+                {{content.trans2 | safe}}
             </div> 
             <div class="followup-opts">
                 <img class="lupa" id="lupa" src="/static/icono_lupa.png" >
@@ -33,22 +33,22 @@
         <div class="text-container" id="tc-quest">
             <form class="preguntas_form" method="post" name="mis_form_preguntas" onsubmit="showCoin()">
                 <div class="text-excerpt" id="questions">
-                    {{session.pregunta1 | safe}}
+                    {{content.pregunta1 | safe}}
                 </div> 
                 <div class="form__group field">
-                    {% if session.respuesta1 %}
-                        <input type="text" name="respuesta1" class="form__field" placeholder="{{ session.respuesta1 }}" autocomplete="off" readonly />
+                    {% if content.respuesta1 %}
+                        <input type="text" name="respuesta1" class="form__field" placeholder="{{ content.respuesta1 }}" autocomplete="off" readonly />
                     {% else %}
                         <input type="text" name="respuesta1" class="form__field" placeholder="Campo obligatorio para poder continuar la travesía" autocomplete="off" required />
                     {% endif %}
                 </div>
                 
                 <div class="text-excerpt" id="questions">
-                    {{session.pregunta2 | safe}}
+                    {{content.pregunta2 | safe}}
                 </div> 
                 <div class="form__group field">
-                    {% if session.respuesta2 %}
-                        <input type="text" name="respuesta2" class="form__field" placeholder="{{ session.respuesta2 }}" autocomplete="off" readonly />
+                    {% if content.respuesta2 %}
+                        <input type="text" name="respuesta2" class="form__field" placeholder="{{ content.respuesta2 }}" autocomplete="off" readonly />
                     {% else %}
                         <input type="text" name="respuesta2" class="form__field" placeholder="Campo obligatorio para poder continuar la travesía" autocomplete="off" required />
                     {% endif %}
@@ -67,7 +67,7 @@
         
         <div class="text-container" id="tc-org">
             <div class="text-excerpt-ar" id="original" style="text-align: right;">
-                {{session.original | safe}}
+                {{content.original | safe}}
             </div>        
         </div>
     </div>
@@ -103,7 +103,7 @@
            window.location.href = "index";
        };
        
-       {% if session.respuesta1 %}
+       {% if content.respuesta1 %}
             document.getElementById("tc-quest").style.visibility = "visible";
             document.getElementById("moneda-ext").style.visibility = "visible";
        {% endif %}
