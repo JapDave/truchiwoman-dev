@@ -17,7 +17,26 @@ from collections import Counter
 from synonyms_extractor import Synonyms_and_lemmas_saver
 from DatabaseConnector import _read_file, _write_file, _list_dir
 
-def real_time_processor(row, relev_trad, alter_trad, syn_lem_inst, inversed_lemmas, stop_words):
+
+def correct_lemma_identifier(x, syn_lem_inst):
+    if x in syn_lem_inst.synonyms_dict and not len(x)<=2:
+        return x
+    else:
+        return "&&"
+
+def text_lemmatiser(text, syn_lem_inst):
+    lemmatised_text = ""
+    for e in regex.findall(r"(?<=^|(\<mark\/?\d\/?\>))([^\<\>]+)(?=$|(\<mark\/?\d\/?\>))", text):
+        clean_te = syn_lem_inst.text_cleaner(e[1])
+        for x in clean_te.split():   
+            x_poss_lemmas0 = syn_lem_inst.final_lemmas.get(x) if syn_lem_inst.final_lemmas.get(x) else syn_lem_inst.final_lemmas.get(syn_lem_inst.custom_decoder(x))
+            lemmatised_text += (sorted(x_poss_lemmas0, key=lambda x: correct_lemma_identifier(x, syn_lem_inst))[0] if x_poss_lemmas0 else x) + " "
+        lemmatised_text += e[-1]
+    return lemmatised_text.strip()
+
+
+
+def real_time_processor(row, relev_trad, alter_trad, syn_lem_inst, stop_words):
         
     response_quality = {}
 
@@ -32,19 +51,11 @@ def real_time_processor(row, relev_trad, alter_trad, syn_lem_inst, inversed_lemm
     if regex.search(in_albis_re, row):
         response_quality["phrase"] = "wondering_expression"
 
-    for x in word_salad:        
+    for x in word_salad:     
         x_poss_lemmas0 = syn_lem_inst.final_lemmas.get(x) if syn_lem_inst.final_lemmas.get(x) else syn_lem_inst.final_lemmas.get(syn_lem_inst.custom_decoder(x))
-        x_poss_lemmas = [x]+sorted(x_poss_lemmas0, key=lambda x: regex.search(r"o$", x).group(0) if regex.search(r"o$", x) else '&')[::-1] if x_poss_lemmas0 else x
-        syn0, proper_w1 = None, None
-        for proper_w0 in x_poss_lemmas:
-            if syn_lem_inst.synonyms_dict.get(proper_w0):
-                proper_w1, syn0 = (proper_w0, syn_lem_inst.synonyms_dict.get(proper_w0)) 
-                
-            if syn0:
-                break
-          
-        proper_w1, syn0 = (proper_w1, syn0) if syn0 else (regex.sub(r"(?<=\w{2,})e?s$", "", x), syn_lem_inst.synonyms_dict.get(regex.sub(r"(?<=\w{2,})e?s$", "", x))) 
-        proper_w, syn = (proper_w1, syn0) if syn0 else (proper_w1, syn_lem_inst.synonyms_dict.get(syn_lem_inst.custom_decoder(regex.sub(r"(?<=\w{2,})e?s$", "", x_poss_lemmas[0]))))
+        x_poss_lemmas = sorted(x_poss_lemmas0, key=lambda x: correct_lemma_identifier(x, syn_lem_inst))[0] if x_poss_lemmas0 else x
+        syn0 = syn_lem_inst.synonyms_dict.get(x_poss_lemmas)
+        proper_w, syn = (x_poss_lemmas, syn0) if syn0 else (syn_lem_inst.custom_decoder(x_poss_lemmas), syn_lem_inst.synonyms_dict.get(syn_lem_inst.custom_decoder(x_poss_lemmas))) 
         
         response_quality[x] = {}
         response_quality[x]["lemma"] = proper_w
@@ -52,8 +63,7 @@ def real_time_processor(row, relev_trad, alter_trad, syn_lem_inst, inversed_lemm
         response_quality[x]["n_synonyms"] = len(syn.get("synonyms")) if syn else 1
         response_quality[x]["eval_labels"] = []
 
-        this_word_poss = [proper_w]+inversed_lemmas.get(proper_w, [])
-        this_word_re = '(?<=(^|\W))('+"|".join(set(this_word_poss))+')(?=($|\W))'
+        this_word_re = '(?<=(^|\W))('+proper_w+')(?=($|\W))'
         
         wrd_in_relev_bit_cond = regex.search(regex.compile(this_word_re, regex.I), answers)
         wrd_in_relev_trad_cond = regex.search(regex.compile(this_word_re, regex.I), relev_trad)
@@ -75,7 +85,6 @@ def real_time_processor(row, relev_trad, alter_trad, syn_lem_inst, inversed_lemm
             response_quality[x]["eval_labels"].append("known_no_syn_word")
         
         elif regex.search(r"[^aoeiu]{4,}|^\w$", x):
-
             response_quality[x]["eval_labels"].append("not_spanish_word")
         
         else:
@@ -94,21 +103,13 @@ def real_time_processor(row, relev_trad, alter_trad, syn_lem_inst, inversed_lemm
             wall_finds1 = len([e for e in regex.findall(regex.compile(this_word_re, regex.I), alter_trad) if e])
             response_quality[x]["eval_labels"].append(f"{wall_finds1}_words_found_in_alter")
 
-        if syn and syn.get("synonyms"):
-            for synom in syn.get("synonyms"):
-                syn_syn = syn_lem_inst.synonyms_dict.get(synom) if syn_lem_inst.synonyms_dict.get(synom) else syn_lem_inst.synonyms_dict.get(syn_lem_inst.custom_decoder(synom))
-                if syn_syn:
-                    synom_senses = syn_syn.get("senses")
-                else:
-                    synom_senses = 1
-                
-                if inversed_lemmas.get(synom):
-                    synonyms_re = '(?<=(^|\W))('+"|".join(set([x]+inversed_lemmas.get(synom)))+')(?=($|\W))'
-                    syn_in_relev_trad_cond = regex.findall(regex.compile(synonyms_re, regex.I), relev_trad + " " + alter_trad)
-                    
-                    if syn_in_relev_trad_cond:
-                        all_finds = len([e for e in syn_in_relev_trad_cond if e])
-                        response_quality[x]["eval_labels"].append(f"{all_finds}_finds_{synom_senses}_senses_synonyms_found_in_text")
+        if syn and syn.get("synonyms") and not "stop_word" in response_quality[x]["eval_labels"]:
+            synonyms_re = '(?<=(^|\W))('+"|".join(set([proper_w]+syn.get("synonyms")))+')(?=($|\W))'
+            syn_in_trads_cond = regex.findall(regex.compile(synonyms_re, regex.I), relev_trad + " " + alter_trad)
+            
+            if syn_in_trads_cond:
+                all_finds = len([e for e in syn_in_trads_cond if e and e[1]])
+                response_quality[x]["eval_labels"].append(f"{all_finds}_finds_{syn.get('senses')}_senses_synonyms_found_in_text")
 
     return response_quality
 
@@ -154,9 +155,8 @@ def response_grader(response_quality):
 
 
 
-def meaning_extractor(resp_folder_path, syn_lem_inst):
-    
-    inversed_lemmas = syn_lem_inst.lemma_dict_inverter(syn_lem_inst.final_lemmas)
+def meaning_extractor(resp_folder_path, syn_lem_inst, lemmatised_extr_df):
+
     all_nvl_wrds = syn_lem_inst.clean_text.lower().split()
     
     confused_stops = ["nada", "casa", "así", "muy", "sólo"]
@@ -170,30 +170,35 @@ def meaning_extractor(resp_folder_path, syn_lem_inst):
         if regex.search(r"\.csv$", file):
             onto_df = _read_file(os.path.join(resp_folder_path, file))
             if not (onto_df.response1.isna().all() or onto_df.response2.isna().all()):
-                response_df = onto_df[(onto_df.response1 + onto_df.response1).str.len() > 2]
-                if response_df.shape[0]>0:
-                    row_qualities, row_evals = [], []
-                    for row_n in range(response_df.shape[0]):
-                        whole_row = response_df.iloc[row_n]
-                        row = whole_row["response1"] + " " + whole_row["response2"]
-                        
-                        alt_trad = list(set(["human", "chatgpt"]).difference(set([whole_row.agent])))[0]
-                        relev_trad = whole_row[whole_row.agent]
-                        alter_trad = whole_row[alt_trad]
-                    
-                        row_quality = real_time_processor(row, relev_trad, alter_trad, syn_lem_inst, inversed_lemmas, stop_words)
-                        row_qualities.append(row_quality)
-                        row_evals.append(response_grader(row_quality) | {"unique_id": int(whole_row["unique_id"])})
-                        
-                    eval_df = pd.DataFrame(row_evals).set_index("unique_id")
-                    useful_cols = [c for c in response_df.columns if not regex.search(r"\s|unique_id", c)]
-                    whole_df = pd.concat([response_df.set_index("unique_id")[useful_cols], eval_df], axis=1)
-                    enriched_dfs.append(whole_df)
+                response_df0 = onto_df[(onto_df.response1 + onto_df.response2).str.len() > 2]
+                if response_df0.shape[0]>0:
+                    response_df = response_df0[response_df0.relevancy==""]
+                    if response_df.shape[0]>0:
+                        row_evals = []
+                        for row_n in range(response_df.shape[0]):
+                            whole_row = response_df.iloc[row_n]
+                            row = whole_row["response1"] + " " + whole_row["response2"]
+                            
+                            alt_trad = list(set(["human", "chatgpt"]).difference(set([whole_row.agent])))[0]
+                            lemm_trads = lemmatised_extr_df[lemmatised_extr_df.unique_id==whole_row["unique_id"]]
+                            relev_trad = lemm_trads["clean_"+whole_row.agent].tolist()[0]
+                            alter_trad = lemm_trads["clean_"+alt_trad].tolist()[0]
+                            row_quality = real_time_processor(row, relev_trad, alter_trad, syn_lem_inst, stop_words)
+                            row_evals.append(response_grader(row_quality) | {"unique_id": int(whole_row["unique_id"])})
+                            
+                        eval_df = pd.DataFrame(row_evals).set_index("unique_id")
+                        whole_df0 = onto_df.set_index("unique_id").merge(eval_df, how="left", left_index=True, right_index=True)
+                        new_cols = {k: np.where(whole_df0[k+"_x"]=="", whole_df0[k+"_y"], whole_df0[k+"_x"]) for k in ["relevancy", "abstraction"]}
+                        whole_df = whole_df0.assign(**new_cols)
+                        onto_df = whole_df.loc[:, ~whole_df.columns.str.contains('_[xy]$', regex=True)].reset_index()
+                        _write_file(onto_df, os.path.join(resp_folder_path, file))
+                    enriched_dfs.append(onto_df[onto_df.relevancy!=""])
     
     if enriched_dfs:
         final_df = pd.concat(enriched_dfs, axis=0)
-        scaled_cols = {f"scaled_{col}": (final_df[col]-final_df[col].min())/(final_df[col].max()-final_df[col].min()) for col in ["relevancy", "abstraction"]}
-        final_df = final_df.assign(**scaled_cols)
+        relev_cols = {col: pd.to_numeric(final_df[col], errors="coerce") for col in ["relevancy", "abstraction"]}
+        scaled_new_cols = {f"scaled_{k}": (v-v.min())/(v.max()-v.min()) for k, v in relev_cols.items()}
+        final_df = final_df.assign(**(relev_cols | scaled_new_cols))
         return final_df
     else:
         return pd.DataFrame()
@@ -213,7 +218,9 @@ if __name__ == "__main__":
     # responses_folder = os.path.join(data_path, "responses")
     configs_folder = os.path.join(data_path, "configs")
     resources_path = os.path.join(data_path, "linguistic_resources")
-    
+    onto_path = os.path.join(data_path, 'truchiontologia_translations.csv')
+    lemmatised_extr_path = os.path.join(data_path, "lemmatised_extracts.csv")
+
     nov_trad_path = os.path.join(resources_path, "novela_traducida.txt")
     class_path = os.path.join(resources_path, "synonyms_and_lemmas_class.joblib")
     
@@ -232,15 +239,18 @@ if __name__ == "__main__":
                                      save_increase_step=save_increase_step, 
                                      verbose=verbose,
                                      save_class=save_class) 
-    
-    if not os.path.exists(meaningful_df_path):
-        final_df = meaning_extractor(paths.get("configs_folder"), syn_lem_inst)
-        final_df.to_csv(meaningful_df_path)
+        
+            
+    if not os.path.exists(lemmatised_extr_path):
+        onto = _read_file(onto_path)
+        lemmatised_extr_df = onto.assign(**dict(onto[["human", "chatgpt"]].map(lambda x: text_lemmatiser(x, syn_lem_inst)).rename(columns=lambda x: "clean_"+x)))
+        _write_file(lemmatised_extr_df, lemmatised_extr_path)
     else:
-        final_df = pd.read_csv(meaningful_df_path)
-
-
-    final_df = final_df.assign(text=final_df["answer1"]+" "+final_df["answer2"])
+        lemmatised_extr_df = _read_file(lemmatised_extr_path).reset_index()
+    
+        
+    final_df = meaning_extractor(paths.get("configs_folder"), syn_lem_inst, lemmatised_extr_df)
+    final_df = final_df.assign(text=final_df["response1"]+" "+final_df["response2"])
 
     print("From:")
     print(final_df.text.tolist())

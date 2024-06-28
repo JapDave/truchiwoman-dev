@@ -105,7 +105,7 @@ if __name__ == "__main__":
     la memoria. Ven, paciencia, ven, perseverancia, y ven, palabras. <mark2>Para explicarlas con un poco 
     de claridad, para entrelazarlas en líneas comprensibles<mark2/>."""
     
-    row_quality = real_time_processor(row, relev_trad, alter_trad, syn_lem_inst, inversed_lemmas=inversed_lemmas, stop_words=stop_words)
+    row_quality = real_time_processor(row, relev_trad, alter_trad, syn_lem_inst)
     print(syn_lem_inst.synonyms_dict.get(syn_lem_inst.final_lemmas.get("fruto")[0]))
     print(row_quality.get("frutos"))
     print({row: response_grader(row_quality)}) 

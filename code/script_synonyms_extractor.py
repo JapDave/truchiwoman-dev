@@ -9,9 +9,9 @@ import os
 from synonyms_extractor import Synonyms_and_lemmas_saver
 
 # Variables
-increase_syn_dict = 8000
+increase_syn_dict = 10000
 verbose = True
-iterations_for_unfound_syns = 9
+iterations_for_unfound_syns = 15
 
 # Paths
 data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")

@@ -23,10 +23,9 @@ import time
 from datetime import datetime
 
 from synonyms_extractor import Synonyms_and_lemmas_saver
-from insight_retriever import meaning_extractor
+from insight_retriever import text_lemmatiser, meaning_extractor
 
 from google.cloud import storage
-
 
 from DatabaseConnector import _write_file, _read_file, _list_dir, _path_exists
 
@@ -46,7 +45,8 @@ resources_path = os.path.join(data_path, "linguistic_resources")
 
 nov_trad_path = os.path.join(resources_path, "novela_traducida.txt")
 class_path = os.path.join(resources_path, "synonyms_and_lemmas_class.pickle")
-
+    
+lemmatised_extr_path = os.path.join(data_path, "lemmatised_extracts.csv")
 meaningful_df_path = os.path.join(data_path, "meaningful_df.csv")
 success_rates_path = os.path.join(data_path, "success_rates_df.csv")
 
@@ -196,7 +196,7 @@ def get_plot(user, boxplot_df, color_codes_wanted):
     
 
 
-def flahsing(prev_explored_df, n_tiles=3):
+def flashing(prev_explored_df, n_tiles=3):
     if '_flashes' in session:
         session['_flashes'].clear()    
 
@@ -291,7 +291,8 @@ def index():
         
         shuffled_onto = pd.concat([onto_df.sample(len(opt_list)).reset_index(), 
                                    pd.DataFrame({"field": opt_list, "agent": human_bot_shuffle, 
-                                                 "response1":[""]*24, "response2":[""]*24})], 
+                                                 "response1":[""]*24, "response2":[""]*24,
+                                                 "relevancy":[""]*24, "abstraction":[""]*24})], 
                                   axis=1)    
         if init_time:
             elapsed_hours = (datetime.fromtimestamp(time.time())-datetime.fromtimestamp(float(max(init_time)))).total_seconds()/3600
@@ -317,7 +318,6 @@ def translator():
             trans0 = onto[onto.field==field][col].tolist()[0]
             trans1 = regex.sub(r"(?<=\<)\/mark\d+(?=\>)|(?<=\<)mark\d+\/(?=\>)", "/span", 
                                        regex.sub(r"(?<=\<)mark(?=\d+\>)", "span class=highlit_span id=", trans0))
-            
             translations[col] = trans1
 
         original0 = onto[onto.field==field]["original"].tolist()[0]    
@@ -338,9 +338,7 @@ def translator():
         content["respuesta1"] = onto[onto.field==field]["response1"].tolist()[0]
         content["respuesta2"] = onto[onto.field==field]["response2"].tolist()[0]
 
-        # content["unique_id"] = onto[onto.field==field]["unique_id"].tolist()[0]
         session["len_orig"] = len(regex.sub(r'\<mark\d+\>', "", original0))
-        # session["agent"] = agent
         session["start_translation"] = time.time()       
              
         return render_template('translations.html', content = content)
@@ -398,7 +396,7 @@ def wally_searcher():
     
     if request.method == 'GET':  
         content["success_rate"] = ""
-        flahsing(onto, 3)
+        flashing(onto, 3)
         return render_template('wheres_wally.html', content = content)
     
     
@@ -439,9 +437,7 @@ def wally_searcher():
             else:
                 success_df2 = success_df1
 
-                
             _write_file(success_df2, success_rates_path)
-            
             
             global_mean = round((success_df2.success_human.sum()+success_df2.success_chatgpt.sum())/success_df2.sum().sum()*100)
             try:
@@ -459,7 +455,7 @@ def wally_searcher():
             
             content["success_rate"] = regex.sub(r"\n+", "<br><br>", f"""
             De {success_df.shape[0]} azulejos que has completado y la naturaleza de cuyas traducciones has jugado a adivinar, has acertado el {your_success} % de las veces, <span style='color:white; letter-spacing: .2rem; background-color:{color_codes_wanted.get('chatgpt')}97'>{your_success_per_trans.get("chatgpt", 0)}</span> cuando se trataba de una traducción automática y <span style='color:white; letter-spacing: .2rem; background-color:{color_codes_wanted.get('human')}90'>{your_success_per_trans.get("human", 0)}</span> cuando no.
-            De media, la gente acierta el {global_mean} % de las veces, el <span style='color:white; letter-spacing: .2rem; background-color:{color_codes_wanted.get('human')}97'>{human_mean}</span> si la primera traducción mostrada ha sido realizada por una persona y el <span style='color:white; letter-spacing: .2rem; background-color:{color_codes_wanted.get('chatgpt')}90'>{chat_mmean}</span> si es maquinal.
+            De media, la gente acierta el {global_mean} % de las veces, el <span style='color:white; letter-spacing: .2rem; background-color:{color_codes_wanted.get('human')}97'>{human_mean} %</span> si la primera traducción mostrada ha sido realizada por una persona y el <span style='color:white; letter-spacing: .2rem; background-color:{color_codes_wanted.get('chatgpt')}90'>{chat_mmean} %</span> si es maquinal.
             """.strip())
         else:
             content["success_rate"] = "Tienes que explorar un mínimo de 3 azulejos para poder jugar."
@@ -478,12 +474,20 @@ def stats_grabber():
         content["text"] = regex.sub(r"\n+", "<br><br>", explanation)
         
         onto, outpath = onto_df_reader(session["user"], configs_folder)
-        flahsing(onto, n_tiles=4)
+        flashing(onto, n_tiles=4)
         
-        if '_flashes' not in session:      
-            final_df = meaning_extractor(paths.get("configs_folder"), syn_lem_inst)
+        if not _path_exists(lemmatised_extr_path):
+            onto = _read_file(onto_path)
+            lemmatised_extr_df = onto.assign(**dict(onto[["human", "chatgpt"]].map(lambda x: text_lemmatiser(x, syn_lem_inst)).rename(columns=lambda x: "clean_"+x)))
+            _write_file(lemmatised_extr_df, lemmatised_extr_path)
+        else:
+            lemmatised_extr_df = _read_file(lemmatised_extr_path).reset_index()
+            
+        if not '_flashes' in session:      
+            final_df = meaning_extractor(paths.get("configs_folder"), syn_lem_inst, lemmatised_extr_df)
         else:
             final_df = pd.DataFrame()
+            
         if not final_df.empty and final_df.shape[0] >= 4:
             cond_time = pd.to_numeric(final_df.time_elapsed)<7
             cond_resp = final_df[["response1", "response2"]].map(legibility_checker).apply(sum, axis=1)
@@ -494,9 +498,9 @@ def stats_grabber():
                                        first_obs = np.where(cond_first_obs, True, False))   
         
             boxplot_df = users_df[(users_df.too_quick==False) & (users_df.too_sloppy_resp==False) & (users_df.shape[0]>=3) & (users_df.first_obs==False)]
-            flahsing(boxplot_df, n_tiles=4)
+            flashing(boxplot_df, n_tiles=3)
 
-            if not boxplot_df.empty and boxplot_df.shape[0] >= 4 and '_flashes' not in session:
+            if not boxplot_df.empty and boxplot_df.shape[0] >= 3 and not '_flashes' in session:
                 try:
                     content["img_path"] = get_plot(session['user'], boxplot_df, color_codes_wanted)
                 except:
@@ -529,7 +533,7 @@ def feedb_requester():
     
     if request.method == 'GET':  
         onto, outpath = onto_df_reader(session["user"], configs_folder)
-        flahsing(onto, 3)
+        flashing(onto, 3)
         return render_template('feedback.html', content = content)    
     
     if request.method == 'POST':
