@@ -203,7 +203,7 @@ def flashing(prev_explored_df, n_tiles=3):
     if not prev_explored_df.empty:
         cond_resp0 = prev_explored_df[["response1", "response2"]].map(legibility_checker).apply(sum, axis=1)
         n_corr_resp = cond_resp0[cond_resp0==2].shape[0]
-        if n_corr_resp < n_tiles:
+        if not session["passed_fly"] > 1 and n_corr_resp < n_tiles:
             rest = n_tiles-n_corr_resp
             m_rest = f"n {rest}" if rest > 1 else f" {rest}"
             m = f"Tienes que contestar satisfactoriamente a las preguntas de al menos {n_tiles} de los azulejos de los laterales para poder acceder a este contenido, de los cuales te falta{m_rest} por explorar."
@@ -226,11 +226,9 @@ def onto_df_reader(session_user, configs_folder):
         return pd.DataFrame(), None
 
             
-
             
 @app.route("/mosca", methods=['GET'])
 def landing():
-    
     if not "user" in session:
         session['user'] = str(uuid.uuid4())
         session['start_time'] = time.time()
@@ -244,7 +242,6 @@ def landing():
 
 @app.route("/leyenda", methods=['GET'])
 def recounting():
-    
     if request.method == 'GET':   
         if not "user" in session or not "passed_guide" in session:
             session["passed_guide"] = 1
@@ -266,13 +263,19 @@ def passing():
 
         if contra == "masmu7":
             return redirect(url_for('landing'))
+        elif contra == "taller_unis":
+            session["passed_fly"] = 1
+            return redirect(url_for('index'))
+        elif contra == "superadmina":
+            session["passed_fly"] = 2
+            session["passed_guide"] = 1
+            return redirect(url_for('index'))
         else:
             return render_template('portal.html')
 
     
 @app.route("/index", methods=['GET'])
 def index():
-    
     if request.method == 'GET':   
         if not "user" in session:
             return redirect(url_for('landing'))
@@ -308,7 +311,6 @@ def index():
     
 @app.route("/translations", methods=['GET', 'POST'])
 def translator():
-    
     onto, outpath = onto_df_reader(session["user"], configs_folder)
     field = request.args.get("location")
 
