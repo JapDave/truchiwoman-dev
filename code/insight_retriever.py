@@ -148,11 +148,11 @@ def response_grader(response_quality):
             info = {}
             
     if info.get("phrase"):
-        relevancy = (relev_grade+response_quality.get("n_tokens"))*.5/response_quality.get("n_words")
+        relevancy = (relev_grade+response_quality.get("n_tokens"))*.5/(response_quality.get("n_words")+1)
     else:
-        relevancy = (relev_grade+response_quality.get("n_tokens"))/response_quality.get("n_words")
+        relevancy = (relev_grade+response_quality.get("n_tokens"))/(response_quality.get("n_words")+1)
     
-    abstraction = (abstr_grade+response_quality.get("n_tokens"))/response_quality.get("n_words")
+    abstraction = (abstr_grade+response_quality.get("n_tokens"))/(response_quality.get("n_words")+1)
     
     return {"relevancy": relevancy, "abstraction": abstraction}
 
