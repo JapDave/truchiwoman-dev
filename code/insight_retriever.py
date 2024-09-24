@@ -143,6 +143,9 @@ def response_grader(response_quality):
             elif "not_spanish_word" in info.get("eval_labels"):
                 relev_grade -= 10
                 abstr_grade -= 5
+                
+        else:
+            info = {}
             
     if info.get("phrase"):
         relevancy = (relev_grade+response_quality.get("n_tokens"))*.5/response_quality.get("n_words")
