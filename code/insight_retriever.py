@@ -144,10 +144,8 @@ def response_grader(response_quality):
                 relev_grade -= 10
                 abstr_grade -= 5
                 
-        else:
-            info = {}
             
-    if info.get("phrase"):
+    if response_quality.get("phrase"):
         relevancy = (relev_grade+response_quality.get("n_tokens"))*.5/(response_quality.get("n_words")+1)
     else:
         relevancy = (relev_grade+response_quality.get("n_tokens"))/(response_quality.get("n_words")+1)
@@ -176,12 +174,11 @@ def meaning_extractor(resp_folder_path, syn_lem_inst, lemmatised_extr_df):
                 response_df0 = onto_df[(onto_df.response1 + onto_df.response2).str.len() > 2]
                 if response_df0.shape[0]>0:
                     response_df = response_df0[response_df0.relevancy==""]
-                    if response_df.shape[0]>0:
+                    if response_df.shape[0]>0:                        
                         row_evals = []
                         for row_n in range(response_df.shape[0]):
                             whole_row = response_df.iloc[row_n]
                             row = whole_row["response1"] + " " + whole_row["response2"]
-                            
                             alt_trad = list(set(["human", "chatgpt"]).difference(set([whole_row.agent])))[0]
                             lemm_trads = lemmatised_extr_df[lemmatised_extr_df.unique_id==whole_row["unique_id"]]
                             relev_trad = lemm_trads["clean_"+whole_row.agent].tolist()[0]
