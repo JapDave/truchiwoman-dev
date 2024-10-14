@@ -44,10 +44,11 @@ a:active {
 
 
 .guide_html {
-  background-image: url('../modal_back_img.png');
-  background-repeat: no-repeat;
-  background-size: cover;
-  font-family: 'Arvo', sans-serif;
+    background-image: url('../modal_back_img.png');
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+    background-size: 100% 100%;
+    font-family: 'Arvo', sans-serif;
 }
 
 .acceso {
@@ -69,7 +70,7 @@ a:active {
 }
 
 
- .reduce_screen {
+.reduce_screen {
      visibility: hidden;
  }
 
@@ -108,9 +109,9 @@ video {
 
 .text-idea {
     font-size: calc(6px + (25 - 6) * ((100vw - 300px) / (1600 - 300)));
-    line-height: 130%; 
     text-align: center;
-    padding: .75em;
+    padding: 1.5em;
+    line-height: .1vh; 
     &::first-letter {
       font-size: 2.5em;
       font-family: 'Lavishly Yours', cursive;
@@ -140,7 +141,7 @@ video {
 
 .text-idea-content span {
     font-size: 1.97vmin;
-    line-height: 1.5em;
+    line-height: 1vh; 
     text-align: justify;
 }
 
@@ -150,7 +151,7 @@ video {
     max-height: 40vh;
     float: center;
     margin: 1em;
-    top: 55%;
+    top: 56%;
     left: 50%;
     transform: translate(-50%, -50%);
     opacity: 1;
@@ -161,8 +162,8 @@ video {
     padding: 0em 1.75em 1.5em 0em;
     self-align: center;
     opacity: 0;
+    line-height: 3.3vh; 
 }
-
 
 .map_form {
     display: grid;
