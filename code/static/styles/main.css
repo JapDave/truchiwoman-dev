@@ -111,7 +111,7 @@ video {
     font-size: calc(6px + (25 - 6) * ((100vw - 300px) / (1600 - 300)));
     text-align: center;
     padding: 1.5em;
-    line-height: .1vh; 
+    line-height: 4vh; 
     &::first-letter {
       font-size: 2.5em;
       font-family: 'Lavishly Yours', cursive;
@@ -139,9 +139,9 @@ video {
 }
 
 
-.text-idea-content span {
+.text-idea-content div {
     font-size: 1.97vmin;
-    line-height: 1vh; 
+    line-height: 3.2vh; 
     text-align: justify;
 }
 
@@ -381,12 +381,15 @@ body:has(.trigger[id^="2"]:hover, .trigger[id^="2"]:focus) .highlit_span[id^="2"
 
 .general_stats_info { 
   	position: relative;
-    line-height: 1.2em;
    	max-height: 100%;
    	max-width: 100%;
-    font-weight: 200;
     text-align: justify;
+    /*
     font-size: calc(13px + (18 - 13) * ((100vw - 200px) / (1600 - 200)));
+    */
+    font-size: 1.95vmin;
+    line-height: 2.3vh; 
+    text-align: justify;
     z-index: 1;
 }
 
