@@ -240,6 +240,8 @@ def landing():
         else:
             return redirect(url_for('index'))
 
+
+
 @app.route("/leyenda", methods=['GET'])
 def recounting():
     if request.method == 'GET':   
@@ -248,6 +250,7 @@ def recounting():
             return render_template('leyenda.html')
         else:
             return redirect(url_for('index'))
+
 
 
 @app.route("/", methods=['GET', 'POST'])
@@ -272,6 +275,7 @@ def passing():
             return redirect(url_for('index'))
         else:
             return render_template('portal.html')
+
 
     
 @app.route("/index", methods=['GET'])
@@ -358,6 +362,7 @@ def translator():
         return "", 204
         
     
+    
 @app.route("/explanations", methods=['GET'])
 def explainer():
     
@@ -371,6 +376,7 @@ def explainer():
         content["text2"] = "<span style='margin-left:25px'>" + "</span><br><span style='margin-left:25px'>".join(explan_parts[1:]) + "</span>"
 
         return render_template('explanations.html', content = content)
+
 
 
 @app.route("/wheres_wally", methods=['GET', 'POST'])
@@ -467,6 +473,7 @@ def wally_searcher():
         return render_template('wheres_wally.html', content = content)
 
 
+
 @app.route("/stats", methods=['GET'])
 def stats_grabber(): 
     if request.method == 'GET':  
@@ -544,6 +551,7 @@ def feedb_requester():
             _write_file(feedback_block+"\n\n", os.path.join(feedback_folder, session["user"]+"__"+str(time.time())+".txt"))
                 
         return "", 204
+
 
 
 @app.route("/small_screen", methods=['GET'])
