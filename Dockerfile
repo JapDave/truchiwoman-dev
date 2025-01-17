@@ -14,7 +14,7 @@ WORKDIR /app/code
 
 # Install dependencies from requirements.txt
 # Make sure requirements.txt is at the root or inside 'code' (adjust path accordingly)
-RUN python -m pip install --no-cache-dir -r /app/requirements.txt
+RUN python -m pip install --no-cache-dir -r requirements.txt
 
 # Expose port 8080
 EXPOSE 8080
