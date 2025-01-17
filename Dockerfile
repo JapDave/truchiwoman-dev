@@ -9,11 +9,15 @@ WORKDIR /app
 # Copy the source code into the container
 COPY . .
 
-# Install dependencies
-RUN python -m pip install --no-cache-dir -r requirements.txt
+# Navigate into the 'code' folder as the working directory
+WORKDIR /app/code
+
+# Install dependencies from requirements.txt
+# Make sure requirements.txt is at the root or inside 'code' (adjust path accordingly)
+RUN python -m pip install --no-cache-dir -r /app/requirements.txt
 
 # Expose port 8080
-EXPOSE 5000
+EXPOSE 8080
 
-# Run the application (main.py is in the 'code' folder)
-CMD ["python", "code/main.py"]
+# Run the application
+CMD ["python", "main.py"]
