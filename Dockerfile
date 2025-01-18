@@ -1,23 +1,15 @@
-# syntax=docker/dockerfile:1
-
-# Base image
 FROM python:3.10-slim
 
-# Set the working directory to /app
-WORKDIR /app
+ENV PYTHONUNBUFFERED True
 
-# Copy the source code into the container
-COPY . .
+ENV APP_HOME /app/code
 
-# Navigate into the 'code' folder as the working directory
-WORKDIR /app/code
+ENV PORT 5000
 
-# Install dependencies from requirements.txt
-# Make sure requirements.txt is at the root or inside 'code' (adjust path accordingly)
-RUN python -m pip install --no-cache-dir -r requirements.txt
+WORKDIR $APP_HOME
 
-# Expose port 8080
-EXPOSE 5000
+COPY . ./
 
-# Run the application
-CMD ["python", "main.py"]
+RUN pip install --no-cache-dir -r requirements.txt
+
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app
