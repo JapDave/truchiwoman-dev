@@ -17,7 +17,8 @@ WORKDIR /app/code
 RUN python -m pip install --no-cache-dir -r requirements.txt
 
 # Expose port 8080
-EXPOSE 5000
+EXPOSE 8080
 
+ENV PYTHONUNBUFFERED=1
 # Run the application
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app
+CMD ["python", "main.py"]
