@@ -260,7 +260,7 @@ def passing():
             return render_template('portal.html')
         else:
             return redirect(url_for('landing'))
-        
+
     if request.method == 'POST':
         contra = request.form.get('passable')
 
@@ -277,7 +277,7 @@ def passing():
             return render_template('portal.html')
 
 
-    
+
 @app.route("/index", methods=['GET'])
 def index():
     if request.method == 'GET':   
@@ -446,18 +446,18 @@ def wally_searcher():
                 success_df2 = success_df1
 
             _write_file(success_df2, success_rates_path)
-            
+
             global_mean = round((success_df2.success_human.sum()+success_df2.success_chatgpt.sum())/success_df2.sum().sum()*100)
             try:
                 human_mean = round(success_df2.success_human.sum()/(success_df2.success_human.sum()+success_df2.fail_human.sum())*100)
             except:
                 human_mean = "N/A"
-                
+
             try:
                 chat_mmean = round(success_df2.success_chatgpt.sum()/(success_df2.success_chatgpt.sum()+success_df2.fail_chatgpt.sum())*100)
             except:
                 chat_mmean = "N/A"
-                
+
             your_success = round((success_df1.success_human.sum()+success_df1.success_chatgpt.sum())/success_df1.sum().sum()*100)
             your_success_per_trans = success_df.groupby("agent")["success"].sum()
             
@@ -468,8 +468,8 @@ def wally_searcher():
         else:
             content["success_rate"] = "Tienes que explorar un mínimo de 3 azulejos para poder jugar."
             content["success"] = {}
-        
-        
+
+
         return render_template('wheres_wally.html', content = content)
 
 
