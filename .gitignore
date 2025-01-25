@@ -1,9 +1,12 @@
 .DS_Store
 data/.DS_Store
 /code/__pycache__
-/data/linguistic_resources
 /data/configs
 data/.DS_Store
 data/.DS_Store
-data/* 
 venv/
+/data/sessions/
+/data/feedback/
+/data/lemmatised_extracts.csv
+/data/truchiontologia_explanations.csv
+/data/truchiontologia_translations.csv
