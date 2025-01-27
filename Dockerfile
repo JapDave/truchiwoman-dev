@@ -22,5 +22,4 @@ EXPOSE 8080
 ENV PYTHONUNBUFFERED=1
 # Run the application
 # CMD ["python", "main.py"]
-CMD exec gunicorn --bind :8888 --workers 1 --threads 8 --timeout 0 main:app
-# CMD ["gunicorn"  , "-b", "0.0.0.0:8888", "main:app"]
+CMD ["gunicorn"  , "-b", "0.0.0.0:8888", "--timeout", "1000", "main:app"]
