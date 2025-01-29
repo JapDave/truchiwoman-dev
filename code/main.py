@@ -29,7 +29,7 @@ from google.cloud import storage
 
 from DatabaseConnector import _write_file, _read_file, _list_dir, _path_exists
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
 app.secret_key = b'_asfqwr54q3rfvcEQ@$'
 
 data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),"data")
