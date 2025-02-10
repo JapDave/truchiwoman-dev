@@ -169,7 +169,7 @@ def meaning_extractor(resp_folder_path, syn_lem_inst, lemmatised_extr_df):
     files = _list_dir(resp_folder_path)
     for file in files:
         if regex.search(r"\.csv$", file):
-            onto_df = _read_file(os.path.join(resp_folder_path, file))
+            onto_df = _read_file(resp_folder_path + "/" + file)
             if not (onto_df.response1.isna().all() or onto_df.response2.isna().all()):
                 response_df0 = onto_df[(onto_df.response1 + onto_df.response2).str.len() > 2]
                 if response_df0.shape[0]>0:
