@@ -28,27 +28,40 @@ from insight_retriever import text_lemmatiser, meaning_extractor
 from google.cloud import storage
 
 from DatabaseConnector import _write_file, _read_file, _list_dir, _path_exists
+from dotenv import load_dotenv
 
 app = Flask(__name__, static_folder="static")
 app.secret_key = b'_asfqwr54q3rfvcEQ@$'
-
 data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),"data")
+load_dotenv()
+
+if os.environ.get("SERVER_TYPE") == "GCP":
+    configs_folder =  'data/configs'
+    feedback_folder = 'data/feedback'
+    onto_path = 'data/truchiontologia_translations.csv'
+    explain_path = 'data/truchiontologia_explanations.csv'
+    resources_path = 'data/linguistic_resources/'
+    nov_trad_path =  resources_path + 'novela_traducida.txt'
+    class_path =  resources_path + 'synonyms_and_lemmas_class.pickle'
+    lemmatised_extr_path = 'data/lemmatised_extracts.csv'
+    meaningful_df_path = 'data/meaningful_df.csv'
+    success_rates_path = 'data/success_rates_df.csv'
+
+else:
+    configs_folder = os.path.join(data_path, 'configs')
+    feedback_folder = os.path.join(data_path, 'feedback')
+    onto_path = os.path.join(data_path, 'truchiontologia_translations.csv')
+    explain_path = os.path.join(data_path, 'truchiontologia_explanations.csv')
+    resources_path = os.path.join(data_path, "linguistic_resources")
+    nov_trad_path = os.path.join(resources_path, "novela_traducida.txt")
+    class_path = os.path.join(resources_path, "synonyms_and_lemmas_class.pickle")
+        
+    lemmatised_extr_path = os.path.join(data_path, "lemmatised_extracts.csv")
+    meaningful_df_path = os.path.join(data_path, "meaningful_df.csv")
+    success_rates_path = os.path.join(data_path, "success_rates_df.csv")
+
 sessions_folder = os.path.join(data_path, 'sessions')
-configs_folder = os.path.join(data_path, 'configs')
 responses_folder = os.path.join(data_path, 'responses')
-feedback_folder = os.path.join(data_path, 'feedback')
-
-onto_path = os.path.join(data_path, 'truchiontologia_translations.csv')
-explain_path = os.path.join(data_path, 'truchiontologia_explanations.csv')
-
-resources_path = os.path.join(data_path, "linguistic_resources")
-
-nov_trad_path = os.path.join(resources_path, "novela_traducida.txt")
-class_path = os.path.join(resources_path, "synonyms_and_lemmas_class.pickle")
-    
-lemmatised_extr_path = os.path.join(data_path, "lemmatised_extracts.csv")
-meaningful_df_path = os.path.join(data_path, "meaningful_df.csv")
-success_rates_path = os.path.join(data_path, "success_rates_df.csv")
 
 paths = {
     "configs_folder": configs_folder,
@@ -56,7 +69,7 @@ paths = {
     "class_path": class_path,
     "meaningful_df_path": meaningful_df_path
          }
-
+print(paths, "PATHS")
 increase_syn_dict = 500
 iterations_for_unfound_syns = 0
 save_increase_step = 500
@@ -172,7 +185,7 @@ def get_plot(user, boxplot_df, color_codes_wanted):
         axes[j].set(xlabel=None)
         axes[j].set(ylabel=None)
     
-    if os.environ.get('SERVER_TYPE', '') == 'GCP': 
+    if os.environ.get('SERVER_TYPE', '') == 'GCP':
         client = storage.Client(project='truchiwoman')
         bucket = client.bucket('data_truchiwoman')
         blob = bucket.blob('plots/'+user+'.png')
@@ -216,11 +229,12 @@ def flashing(prev_explored_df, n_tiles=3):
 def onto_df_reader(session_user, configs_folder):
     
     all_configs = _list_dir(configs_folder)
+    print(configs_folder, "configs")
     init_time = ['.'.join(e.split("__")[-1].split(".")[:-1]) for e in all_configs if len(all_configs) > 0 and session_user==e.split("__")[0]]
-    
+  
     if init_time: 
         outpath = f"{session_user}__{max(init_time)}.csv"
-        onto_df = _read_file(os.path.join(configs_folder, outpath))
+        onto_df = _read_file(configs_folder + "/" + outpath)
         return onto_df, outpath
     else:
         return pd.DataFrame(), None
@@ -304,10 +318,10 @@ def index():
         if init_time:
             elapsed_hours = (datetime.fromtimestamp(time.time())-datetime.fromtimestamp(float(max(init_time)))).total_seconds()/3600
             if elapsed_hours >= 24:
-                _write_file(shuffled_onto, os.path.join(configs_folder, outpath))
+                _write_file(shuffled_onto, configs_folder + "/"+ outpath)
                   
         else:
-            _write_file(shuffled_onto, os.path.join(configs_folder, outpath))
+            _write_file(shuffled_onto, configs_folder + "/" + outpath)
         
         return render_template('index.html')
 
@@ -316,6 +330,7 @@ def index():
 @app.route("/translations", methods=['GET', 'POST'])
 def translator():
     onto, outpath = onto_df_reader(session["user"], configs_folder)
+    print(onto, "Translation")
     field = request.args.get("location")
 
     if request.method == 'GET':  
@@ -512,7 +527,7 @@ def stats_grabber():
             if not boxplot_df.empty and boxplot_df.shape[0] >= 3 and not '_flashes' in session:
                 try:
                     content["img_path"] = get_plot(session['user'], boxplot_df, color_codes_wanted)
-                except:
+                except Exception as e:
                     _write_file(str(session["user"])+"\n"+str(final_df.shape[0])+"\n"+str(boxplot_df.shape[0]), "/data/log_img_err.txt")
                     _write_file(final_df, "/data/final_df.csv")
                     _write_file(boxplot_df, "/data/boxplot_df.csv")
@@ -530,7 +545,7 @@ def stats_grabber():
                 _write_file(final_df, "/data/final_df_arg.csv")
                 _write_file(boxplot_df, "/data/boxplot_df_arg.csv")
         return render_template('stats.html', content = content) 
-            
+
     
     
 @app.route("/feedback", methods=['GET', 'POST'])

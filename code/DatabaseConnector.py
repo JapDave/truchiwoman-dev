@@ -11,7 +11,7 @@ import pickle
 import joblib
 import pandas as pd
 import gcsfs
-
+from google.auth import default
 from google.cloud import storage
 
 
@@ -31,8 +31,9 @@ def _read_file (path):
     
     _, file_extension = os.path.splitext(path)
     
-    if os.environ.get('SERVER_TYPE', '') == 'GCP': 
-        path = "gs://data_truchiwoman" + path
+    if os.environ.get('SERVER_TYPE', '') == 'GCP':
+        path = "gs://data_truchiwoman/" + path
+        credentials, project = default()
         if file_extension == '.csv':
             if path.find("configs")>0:
                 obj = pd.read_csv(path, keep_default_na=False)
@@ -41,15 +42,15 @@ def _read_file (path):
             else:
                 obj = pd.read_csv(path)
         elif file_extension == '.pickle' or file_extension==".pkl":
-            fs = gcsfs.GCSFileSystem(project='truchiwoman', token='cloud')
+            fs = gcsfs.GCSFileSystem(credentials=credentials)
             with fs.open(path, 'rb') as f:
                 obj = pickle.load(f)
         elif file_extension == '.joblib':
-                fs = gcsfs.GCSFileSystem(project='truchiwoman', token='cloud')
+                fs = gcsfs.GCSFileSystem(credentials=credentials)
                 with fs.open(path, 'rb') as f:
                     obj = joblib.load(f)
         else:
-            fs = gcsfs.GCSFileSystem(project='truchiwoman', token='cloud')
+            fs = gcsfs.GCSFileSystem(credentials=credentials)
             with fs.open(path, 'r') as fh:
                 obj = fh.read()
 
@@ -84,11 +85,10 @@ def _write_file (obj, path):
         path(str): path completo donde guardar el archivo
     """
     _, file_extension = os.path.splitext(path)
-
-    if os.environ.get('SERVER_TYPE', '') == 'GCP': 
-        path = "gs://data_truchiwoman" + path
-        fs = gcsfs.GCSFileSystem(project='truchiwoman', token='cloud')
-        
+    if os.environ.get('SERVER_TYPE', '') == 'GCP':
+        credentials, project = default()
+        path = "gs://data_truchiwoman/" + path
+        fs = gcsfs.GCSFileSystem(credentials=credentials)
         if file_extension == '.csv':
             obj.to_csv(path, index=False)
 
@@ -113,12 +113,12 @@ def _write_file (obj, path):
                 
 
 def _list_dir(path):
-    if os.environ.get('SERVER_TYPE', '') == 'GCP': 
-        storage_client = storage.Client()
-        blobs = storage_client.list_blobs('data_truchiwoman', prefix=path[1:])
+    if os.environ.get('SERVER_TYPE', '') == 'GCP':
+        credentials, project = default() 
+        storage_client = storage.Client(credentials=credentials)
+        blobs = storage_client.list_blobs('data_truchiwoman', prefix=path)
         
         cand_files = [b.name for b in blobs]
-        
         if len(cand_files)>0:
             cand_files = [file.split("/")[-1] for file in cand_files if len(file)>0]      
         else:
@@ -133,8 +133,9 @@ def _list_dir(path):
 
 def _path_exists(path):
     if os.environ.get('SERVER_TYPE', '') == 'GCP':
-        path = "gs://data_truchiwoman" + path
-        fs = gcsfs.GCSFileSystem(project='truchiwoman', token='cloud')
+        path = "gs://data_truchiwoman/" + path
+        credentials, project = default() 
+        fs = gcsfs.GCSFileSystem(credentials=credentials)
         return fs.exists(path)
     else:
         return os.path.exists(path)
