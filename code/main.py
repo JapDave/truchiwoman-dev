@@ -26,7 +26,7 @@ from synonyms_extractor import Synonyms_and_lemmas_saver
 from insight_retriever import text_lemmatiser, meaning_extractor
 
 from google.cloud import storage
-
+from google.auth import default
 from DatabaseConnector import _write_file, _read_file, _list_dir, _path_exists
 from dotenv import load_dotenv
 
@@ -69,7 +69,8 @@ paths = {
     "class_path": class_path,
     "meaningful_df_path": meaningful_df_path
          }
-print(paths, "PATHS")
+
+files = _list_dir(configs_folder)
 increase_syn_dict = 500
 iterations_for_unfound_syns = 0
 save_increase_step = 500
@@ -186,7 +187,8 @@ def get_plot(user, boxplot_df, color_codes_wanted):
         axes[j].set(ylabel=None)
     
     if os.environ.get('SERVER_TYPE', '') == 'GCP':
-        client = storage.Client(project='truchiwoman')
+        credentials, project = default() 
+        client = storage.Client(credentials=credentials)
         bucket = client.bucket('data_truchiwoman')
         blob = bucket.blob('plots/'+user+'.png')
         # temporarily save image to buffer
@@ -229,7 +231,6 @@ def flashing(prev_explored_df, n_tiles=3):
 def onto_df_reader(session_user, configs_folder):
     
     all_configs = _list_dir(configs_folder)
-    print(configs_folder, "configs")
     init_time = ['.'.join(e.split("__")[-1].split(".")[:-1]) for e in all_configs if len(all_configs) > 0 and session_user==e.split("__")[0]]
   
     if init_time: 
