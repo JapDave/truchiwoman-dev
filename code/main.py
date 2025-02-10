@@ -529,9 +529,9 @@ def stats_grabber():
                 try:
                     content["img_path"] = get_plot(session['user'], boxplot_df, color_codes_wanted)
                 except Exception as e:
-                    _write_file(str(session["user"])+"\n"+str(final_df.shape[0])+"\n"+str(boxplot_df.shape[0]), "/data/log_img_err.txt")
-                    _write_file(final_df, "/data/final_df.csv")
-                    _write_file(boxplot_df, "/data/boxplot_df.csv")
+                    _write_file(str(session["user"])+"\n"+str(final_df.shape[0])+"\n"+str(boxplot_df.shape[0]), "data/log_img_err.txt")
+                    _write_file(final_df, "data/final_df.csv")
+                    _write_file(boxplot_df, "data/boxplot_df.csv")
                 content["time_notion"] = concepts_dict.get("time")
                 content["relev_notion"] = concepts_dict.get("relev")
                 content["abstr_notion"] = concepts_dict.get("abstr")
@@ -542,9 +542,9 @@ def stats_grabber():
                 content["amount_solved_tiles_human"] = f"<span style='color:white; background-color:{color_codes_wanted.get('human')}'>&ensp;{int(amount_solved_tiles_human)}&ensp;</span>"
                 content["amount_solved_tiles_chatgpt"] = f"<span style='color:white; background-color:{color_codes_wanted.get('chatgpt')}'>&ensp;{int(amount_solved_tiles_chatgpt)}&ensp;</span>"   
             else:
-                _write_file(str(session["user"])+"\n"+str(final_df.shape[0])+"\n"+str(boxplot_df.shape[0]), "/data/log_img_err.txt")
-                _write_file(final_df, "/data/final_df_arg.csv")
-                _write_file(boxplot_df, "/data/boxplot_df_arg.csv")
+                _write_file(str(session["user"])+"\n"+str(final_df.shape[0])+"\n"+str(boxplot_df.shape[0]), "data/log_img_err.txt")
+                _write_file(final_df, "data/final_df_arg.csv")
+                _write_file(boxplot_df, "data/boxplot_df_arg.csv")
         return render_template('stats.html', content = content) 
 
     
