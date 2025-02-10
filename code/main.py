@@ -529,6 +529,7 @@ def stats_grabber():
                 try:
                     content["img_path"] = get_plot(session['user'], boxplot_df, color_codes_wanted)
                 except Exception as e:
+                    print(e, "ERROR")
                     _write_file(str(session["user"])+"\n"+str(final_df.shape[0])+"\n"+str(boxplot_df.shape[0]), "data/log_img_err.txt")
                     _write_file(final_df, "data/final_df.csv")
                     _write_file(boxplot_df, "data/boxplot_df.csv")
