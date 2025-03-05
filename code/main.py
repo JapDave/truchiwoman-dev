@@ -16,7 +16,7 @@ import numpy as np
 
 from unidecode import unidecode
 
-from flask import Flask, render_template, request, session, redirect, url_for, flash
+from flask import Flask, render_template, request, session, redirect, url_for, flash, send_from_directory
 
 import uuid
 import time
@@ -240,7 +240,9 @@ def onto_df_reader(session_user, configs_folder):
     else:
         return pd.DataFrame(), None
 
-            
+@app.route("/sitemap.xml")
+def sitemap():
+    return send_from_directory("static", "sitemap.xml", mimetype="application/xml")         
             
 @app.route("/mosca", methods=['GET'])
 def landing():
