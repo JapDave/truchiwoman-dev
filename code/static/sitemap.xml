@@ -8,9 +8,28 @@
 
 
 <url>
-  <loc>https://truchiwoman.es/</loc>
-  <lastmod>2025-03-05T05:10:51+00:00</lastmod>
+    <loc>https://truchiwoman.es/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
 </url>
-
-
+<url>
+    <loc>https://truchiwoman.es/index</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+</url>
+<url>
+    <loc>https://truchiwoman.es/translations</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+</url>
+<url>
+    <loc>https://truchiwoman.es/stats</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+</url>
+<url>
+    <loc>https://truchiwoman.es/feedback</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+</url>
 </urlset>

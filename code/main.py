@@ -575,7 +575,7 @@ def feedb_requester():
 
 @app.route("/small_screen", methods=['GET'])
 def small_screen():
-    if request.method == 'GET':                   
+    if request.method == 'GET':
         return render_template('small_screen.html')
       
     
